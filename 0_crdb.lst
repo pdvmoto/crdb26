@@ -1,0 +1,43 @@
+SQL> 
+SQL> connect / as sysdba
+Connected to an idle instance.
+SQL> 
+SQL> host ${ORACLE_HOME}/bin/orapwd			     \
+
+SQL> 	     file=${ORACLE_HOME}/dbs/orapw${ORACLE_SID}      \
+SP2-0734: unknown command beginning "file=${ORA..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SQL> 	     password=&&sysPassword			     \
+Changing password for =oracle
+Password unchanged
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> exit
+SQL> 
+SQL> connect / as sysdba
+Connected to an idle instance.
+SQL> 
+SQL> -- host command must be 1 line inside sqlplus ...
+SQL> host ${ORACLE_HOME}/bin/orapwd file=${ORACLE_HOME}/dbs/orapw${ORACLE_SID} password=&&sysPassword force=y format=12
+
+SQL> 
+SQL> --
+SQL> @${ORACLE_BASE}/admin/${ORACLE_SID}/scripts/1_crdb.sql
+SQL> 
+SQL> spool 1_crdb.log append
+SQL> 
+SQL> connect / as sysdba
+Connected to an idle instance.
+SQL> 
+SQL> -- host command must be 1 line inside sqlplus ...
+SQL> host ${ORACLE_HOME}/bin/orapwd file=${ORACLE_HOME}/dbs/orapw${ORACLE_SID} password=&&sysPassword force=y format=12
+
+SQL> 
+SQL> --
+SQL> @${ORACLE_BASE}/admin/${ORACLE_SID}/scripts/1_crdb.sql
+SQL> 
+SQL> spool 1_crdb.log append

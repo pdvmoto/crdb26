@@ -1,0 +1,1634 @@
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Enter value for syspassword: 
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo First..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> startup nomount pfile="/opt/oracle/admin/c2/scripts/init.ora";
+ORACLE instance started.
+
+Total System Global Area 2463340984 bytes                                       
+Fixed Size                  5011896 bytes                                       
+Variable Size             553648128 bytes                                       
+Database Buffers         1895825408 bytes                                       
+Redo Buffers                8855552 bytes                                       
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	 TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 12  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 13    CHARACTER SET AL32UTF8
+ 14    NATIONAL CHARACTER SET AL16UTF16
+ 15    SET DEFAULT BIGFILE TABLESPACE
+ 16  LOGFILE
+ 17    GROUP 1	SIZE 200M,
+ 18    GROUP 2	SIZE 200M,
+ 19    GROUP 3	SIZE 200M
+ 20  USER SYS IDENTIFIED BY "&&sysPassword" USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 21  enable pluggable database
+ 22  LOCAL UNDO ON;
+Enter value for systempassword: 
+USER SYS IDENTIFIED BY "" USER SYSTEM IDENTIFIED BY ""
+                       *
+ERROR at line 20:
+ORA-01741: illegal zero-length identifier 
+Help: https://docs.oracle.com/error-help/db/ora-01741/ 
+
+
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/product/26ai/dbhome_1/dbs/cntrlC1.dbf'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+
+1 row selected.
+
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo End o..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo First..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> startup nomount
+ORACLE instance started.
+
+Total System Global Area 4292062776 bytes                                       
+Fixed Size                  5017144 bytes                                       
+Variable Size             822083584 bytes                                       
+Database Buffers         3456106496 bytes                                       
+Redo Buffers                8855552 bytes                                       
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	 TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 12  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 13    CHARACTER SET AL32UTF8
+ 14    NATIONAL CHARACTER SET AL16UTF16
+ 15    SET DEFAULT BIGFILE TABLESPACE
+ 16  LOGFILE
+ 17    GROUP 1	SIZE 200M,
+ 18    GROUP 2	SIZE 200M,
+ 19    GROUP 3	SIZE 200M
+ 20  USER SYS IDENTIFIED BY "&&sysPassword"
+ 21  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 22  --enable pluggable database
+ 23  LOCAL UNDO ON
+ 24  ;
+LOCAL UNDO ON
+*
+ERROR at line 23:
+ORA-02165: invalid option for CREATE DATABASE 
+Help: https://docs.oracle.com/error-help/db/ora-02165/ 
+
+
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/oradata/C1/control01.ctl'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+1 row selected.
+
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo End o..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo First..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> startup nomount
+ORACLE instance started.
+
+Total System Global Area 4292062776 bytes                                       
+Fixed Size                  5017144 bytes                                       
+Variable Size             822083584 bytes                                       
+Database Buffers         3456106496 bytes                                       
+Redo Buffers                8855552 bytes                                       
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	 TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 12  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 13    CHARACTER SET AL32UTF8
+ 14    NATIONAL CHARACTER SET AL16UTF16
+ 15    SET DEFAULT BIGFILE TABLESPACE
+ 16  LOGFILE
+ 17    GROUP 1	SIZE 200M,
+ 18    GROUP 2	SIZE 200M,
+ 19    GROUP 3	SIZE 200M
+ 20  USER SYS IDENTIFIED BY "&&sysPassword"
+ 21  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 22  LOCAL UNDO ON
+ 23  ;
+LOCAL UNDO ON
+*
+ERROR at line 22:
+ORA-02165: invalid option for CREATE DATABASE 
+Help: https://docs.oracle.com/error-help/db/ora-02165/ 
+
+
+SQL> 
+SQL> --enable pluggable database
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/oradata/C1/control01.ctl'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+1 row selected.
+
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo End o..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo First..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> startup nomount
+ORACLE instance started.
+
+Total System Global Area 4292062776 bytes                                       
+Fixed Size                  5017144 bytes                                       
+Variable Size             822083584 bytes                                       
+Database Buffers         3456106496 bytes                                       
+Redo Buffers                8855552 bytes                                       
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	 TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 12  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 13    CHARACTER SET AL32UTF8
+ 14    NATIONAL CHARACTER SET AL16UTF16
+ 15    SET DEFAULT BIGFILE TABLESPACE
+ 16  LOGFILE
+ 17    GROUP 1	SIZE 200M,
+ 18    GROUP 2	SIZE 200M,
+ 19    GROUP 3	SIZE 200M
+ 20  USER SYS IDENTIFIED BY "&&sysPassword"
+ 21  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 22  LOCAL UNDO ON
+ 23  ;
+LOCAL UNDO ON
+*
+ERROR at line 22:
+ORA-02165: invalid option for CREATE DATABASE 
+Help: https://docs.oracle.com/error-help/db/ora-02165/ 
+
+
+SQL> 
+SQL> CREATE DATABASE FREE
+  2  EXTENT MANAGEMENT LOCAL
+  3  DEFAULT TABLESPACE users
+  4  DEFAULT TEMPORARY TABLESPACE temp
+  5  UNDO TABLESPACE undotbs1
+  6    CHARACTER SET AL32UTF8
+  7  ENABLE PLUGGABLE DATABASE
+  8  	SEED
+  9  	SYSTEM DATAFILES SIZE 40M AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED
+ 10  	SYSAUX DATAFILES SIZE 40M;
+CREATE DATABASE FREE
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-01504: database name 'FREE' does not match initialization parameter DB_NAME 
+'C1' 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+SQL> 
+SQL> --enable pluggable database
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/oradata/C1/control01.ctl'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+1 row selected.
+
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo End o..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo First..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> startup nomount
+ORACLE instance started.
+
+Total System Global Area 4292062776 bytes                                       
+Fixed Size                  5017144 bytes                                       
+Variable Size             822083584 bytes                                       
+Database Buffers         3456106496 bytes                                       
+Redo Buffers                8855552 bytes                                       
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	 TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 12  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 13    CHARACTER SET AL32UTF8
+ 14    NATIONAL CHARACTER SET AL16UTF16
+ 15    SET DEFAULT BIGFILE TABLESPACE
+ 16  LOGFILE
+ 17    GROUP 1	SIZE 200M,
+ 18    GROUP 2	SIZE 200M,
+ 19    GROUP 3	SIZE 200M
+ 20  USER SYS IDENTIFIED BY "&&sysPassword"
+ 21  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 22  LOCAL UNDO ON
+ 23  ;
+LOCAL UNDO ON
+*
+ERROR at line 22:
+ORA-02165: invalid option for CREATE DATABASE 
+Help: https://docs.oracle.com/error-help/db/ora-02165/ 
+
+
+SQL> 
+SQL> CREATE DATABASE C1
+  2  EXTENT MANAGEMENT LOCAL
+  3  DEFAULT TABLESPACE users
+  4  DEFAULT TEMPORARY TABLESPACE temp
+  5  UNDO TABLESPACE undotbs1
+  6    CHARACTER SET AL32UTF8
+  7  ENABLE PLUGGABLE DATABASE
+  8  	SEED
+  9  	SYSTEM DATAFILES SIZE 40M AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED
+ 10  	SYSAUX DATAFILES SIZE 40M;
+CREATE DATABASE C1
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-00200: control file could not be created 
+ORA-00202: control file: '/opt/oracle/oradata/C1/control01.ctl' 
+ORA-27040: file create error, unable to create file 
+Linux-x86_64 Error: 2: No such file or directory 
+Additional information: 1 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+SQL> 
+SQL> --enable pluggable database
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/oradata/C1/control01.ctl'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+1 row selected.
+
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo End o..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected.
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo First..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> startup nomount
+ORA-01081: cannot start already-running ORACLE - shut it down first
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	 TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 12  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 13    CHARACTER SET AL32UTF8
+ 14    NATIONAL CHARACTER SET AL16UTF16
+ 15    SET DEFAULT BIGFILE TABLESPACE
+ 16  LOGFILE
+ 17    GROUP 1	SIZE 200M,
+ 18    GROUP 2	SIZE 200M,
+ 19    GROUP 3	SIZE 200M
+ 20  USER SYS IDENTIFIED BY "&&sysPassword"
+ 21  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 22  LOCAL UNDO ON
+ 23  ;
+LOCAL UNDO ON
+*
+ERROR at line 22:
+ORA-02165: invalid option for CREATE DATABASE 
+Help: https://docs.oracle.com/error-help/db/ora-02165/ 
+
+
+SQL> 
+SQL> CREATE DATABASE C1
+  2  EXTENT MANAGEMENT LOCAL
+  3  DEFAULT TABLESPACE users
+  4  DEFAULT TEMPORARY TABLESPACE temp
+  5  UNDO TABLESPACE undotbs1
+  6    CHARACTER SET AL32UTF8
+  7  ENABLE PLUGGABLE DATABASE
+  8  	SEED
+  9  	SYSTEM DATAFILES SIZE 40M AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED
+ 10  	SYSAUX DATAFILES SIZE 40M;
+
+Database created.
+
+SQL> 
+SQL> --enable pluggable database
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/oradata/C1/control01.ctl'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+1 row selected.
+
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> set echo off
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SP2-0734: unknown command beginning "echo End o..." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0734/
+SP2-0042: unknown command "echo ." - rest of line ignored.
+Help: https://docs.oracle.com/error-help/db/sp2-0042/
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+.
+First Start, only works if init-file is present
+.
+SQL> 
+SQL> startup nomount
+ORACLE instance started.
+
+Total System Global Area 4292062776 bytes                                       
+Fixed Size                  5017144 bytes                                       
+Variable Size             822083584 bytes                                       
+Database Buffers         3456106496 bytes                                       
+Redo Buffers                8855552 bytes                                       
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	 TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 12  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 13    CHARACTER SET AL32UTF8
+ 14    NATIONAL CHARACTER SET AL16UTF16
+ 15    SET DEFAULT BIGFILE TABLESPACE
+ 16  LOGFILE
+ 17    GROUP 1	SIZE 200M,
+ 18    GROUP 2	SIZE 200M,
+ 19    GROUP 3	SIZE 200M
+ 20  USER SYS IDENTIFIED BY "&&sysPassword"
+ 21  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 22  LOCAL UNDO ON
+ 23  ;
+LOCAL UNDO ON
+*
+ERROR at line 22:
+ORA-02165: invalid option for CREATE DATABASE 
+Help: https://docs.oracle.com/error-help/db/ora-02165/ 
+
+
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2  MAXINSTANCES 8
+  3  MAXLOGHISTORY 1
+  4  MAXLOGFILES 16
+  5  MAXLOGMEMBERS 3
+  6  MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8  EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10  SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 11  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  5120K MAXSIZE UNLIMITED
+ 12  CHARACTER SET AL32UTF8
+ 13  NATIONAL CHARACTER SET AL16UTF16
+ 14  SET DEFAULT BIGFILE TABLESPACE
+ 15  LOGFILE GROUP 1  SIZE 200M,
+ 16  GROUP 2  SIZE 200M,
+ 17  GROUP 3  SIZE 200M
+ 18  USER SYS IDENTIFIED BY "&&sysPassword" USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 19  enable pluggable database LOCAL UNDO ON;
+CREATE DATABASE "C1"
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-00200: control file could not be created 
+ORA-00202: control file: '/opt/oracle/oradata/C1/control01.ctl' 
+ORA-27040: file create error, unable to create file 
+Linux-x86_64 Error: 2: No such file or directory 
+Additional information: 1 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+SQL> 
+SQL> 
+SQL> CREATE DATABASE C1
+  2  EXTENT MANAGEMENT LOCAL
+  3  DEFAULT TABLESPACE users
+  4  DEFAULT TEMPORARY TABLESPACE temp
+  5  UNDO TABLESPACE undotbs1
+  6    CHARACTER SET AL32UTF8
+  7  ENABLE PLUGGABLE DATABASE
+  8  	SEED
+  9  	SYSTEM DATAFILES SIZE 40M AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED
+ 10  	SYSAUX DATAFILES SIZE 40M;
+CREATE DATABASE C1
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-00200: control file could not be created 
+ORA-00202: control file: '/opt/oracle/oradata/C1/control01.ctl' 
+ORA-27040: file create error, unable to create file 
+Linux-x86_64 Error: 2: No such file or directory 
+Additional information: 1 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+SQL> 
+SQL> --enable pluggable database
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/oradata/C1/control01.ctl'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+1 row selected.
+
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> -- check files..
+SQL> @chk_crdb1
+SQL> rem
+SQL> rem checks after first crdb
+SQL> rem
+SQL> 
+SQL> column con_id     format 9999
+SQL> column mb	       format 999999
+SQL> column fname      format A100
+SQL> 
+SQL> column db_name    format A15
+SQL> column pdb_name   format A15
+SQL> 
+SQL> column dbid       format 999999999999
+SQL> column guid       format A33
+SQL> column omode      format A11
+SQL> column restricted format A10
+SQL> 
+SQL> set linesize 150
+SQL> 
+SQL> select con_id, dbid, name, log_mode, open_mode from v$database ;
+select con_id, dbid, name, log_mode, open_mode from v$database 
+                                                    *
+ERROR at line 1:
+ORA-01507: database not mounted 
+Help: https://docs.oracle.com/error-help/db/ora-01507/ 
+
+
+SQL> 
+SQL> select con_id, name pdb_name, open_mode omode, restricted, dbid , guid
+  2  from v$pdbs ;
+
+no rows selected
+
+SQL> 
+SQL> select con_id, bytes / ( 1024*1024) as mb,  name fname
+  2  from v$datafile
+  3  order by con_id;
+from v$datafile
+     *
+ERROR at line 2:
+ORA-01507: database not mounted 
+Help: https://docs.oracle.com/error-help/db/ora-01507/ 
+
+
+SQL> 
+SQL> select t.con_id, t.name, t.bigfile
+  2  from v$tablespace t
+  3  order by con_id , ts# ;
+from v$tablespace t
+     *
+ERROR at line 2:
+ORA-01507: database not mounted 
+Help: https://docs.oracle.com/error-help/db/ora-01507/ 
+
+
+SQL> 
+SQL> 
+SQL> set echo off
+.
+End of 1_crdb.sql
+.
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+.
+First Start, only works if init-file is present
+.
+SQL> 
+SQL> startup nomount
+ORACLE instance started.
+
+Total System Global Area 4292062776 bytes                                       
+Fixed Size                  5017144 bytes                                       
+Variable Size             822083584 bytes                                       
+Database Buffers         3456106496 bytes                                       
+Redo Buffers                8855552 bytes                                       
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	 TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 12  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 13    CHARACTER SET AL32UTF8
+ 14    NATIONAL CHARACTER SET AL16UTF16
+ 15    SET DEFAULT BIGFILE TABLESPACE
+ 16  LOGFILE
+ 17    GROUP 1	SIZE 200M,
+ 18    GROUP 2	SIZE 200M,
+ 19    GROUP 3	SIZE 200M
+ 20  USER SYS IDENTIFIED BY "&&sysPassword"
+ 21  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 22  LOCAL UNDO ON
+ 23  ;
+LOCAL UNDO ON
+*
+ERROR at line 22:
+ORA-02165: invalid option for CREATE DATABASE 
+Help: https://docs.oracle.com/error-help/db/ora-02165/ 
+
+
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2  MAXINSTANCES 8
+  3  MAXLOGHISTORY 1
+  4  MAXLOGFILES 16
+  5  MAXLOGMEMBERS 3
+  6  MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8  EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10  SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 11  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  5120K MAXSIZE UNLIMITED
+ 12  CHARACTER SET AL32UTF8
+ 13  NATIONAL CHARACTER SET AL16UTF16
+ 14  SET DEFAULT BIGFILE TABLESPACE
+ 15  LOGFILE GROUP 1  SIZE 200M,
+ 16  GROUP 2  SIZE 200M,
+ 17  GROUP 3  SIZE 200M
+ 18  USER SYS IDENTIFIED BY "&&sysPassword" USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 19  enable pluggable database LOCAL UNDO ON;
+
+Database created.
+
+SQL> 
+SQL> 
+SQL> CREATE DATABASE C1
+  2  EXTENT MANAGEMENT LOCAL
+  3  DEFAULT TABLESPACE users
+  4  DEFAULT TEMPORARY TABLESPACE temp
+  5  UNDO TABLESPACE undotbs1
+  6    CHARACTER SET AL32UTF8
+  7  ENABLE PLUGGABLE DATABASE
+  8  	SEED
+  9  	SYSTEM DATAFILES SIZE 40M AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED
+ 10  	SYSAUX DATAFILES SIZE 40M;
+CREATE DATABASE C1
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-01100: database already mounted 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+SQL> 
+SQL> --enable pluggable database
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/oradata/C1/control01.ctl'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+1 row selected.
+
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> -- check files..
+SQL> @chk_crdb1
+SQL> rem
+SQL> rem checks after first crdb
+SQL> rem
+SQL> 
+SQL> column con_id     format 9999
+SQL> column mb	       format 999999
+SQL> column fname      format A100
+SQL> 
+SQL> column db_name    format A15
+SQL> column pdb_name   format A15
+SQL> 
+SQL> column dbid       format 999999999999
+SQL> column guid       format A33
+SQL> column omode      format A11
+SQL> column restricted format A10
+SQL> 
+SQL> set linesize 150
+SQL> 
+SQL> select con_id, dbid, name, log_mode, open_mode from v$database ;
+
+CON_ID          DBID NAME      LOG_MODE     OPEN_MODE                                                                                                 
+------ ------------- --------- ------------ --------------------                                                                                      
+     0    4092490684 C1        NOARCHIVELOG READ WRITE                                                                                                
+
+1 row selected.
+
+SQL> 
+SQL> select con_id, name pdb_name, open_mode omode, restricted, dbid , guid
+  2  from v$pdbs ;
+
+CON_ID PDB_NAME        OMODE       RESTRICTED          DBID GUID                                                                                      
+------ --------------- ----------- ---------- ------------- ---------------------------------                                                         
+     2 PDB$SEED        READ ONLY   NO            2428128226 4EB77F28E1B41294E063020011AC299B                                                          
+
+1 row selected.
+
+SQL> 
+SQL> select con_id, bytes / ( 1024*1024) as mb,  name fname
+  2  from v$datafile
+  3  order by con_id;
+
+CON_ID      MB FNAME                                                                                                                                  
+------ ------- ----------------------------------------------------------------------------------------------------                                   
+     1     700 /opt/oracle/oradata/C1/datafile/o1_mf_system_nx4rr0qn_.dbf                                                                             
+     1     550 /opt/oracle/oradata/C1/datafile/o1_mf_sysaux_nx4rrglm_.dbf                                                                             
+     1     200 /opt/oracle/oradata/C1/datafile/o1_mf_undotbs1_nx4rrohh_.dbf                                                                           
+     2     165 /opt/oracle/oradata/C1/4EB77F28E1B41294E063020011AC299B/datafile/o1_mf_sysaux_nx4rrltf_.dbf                                            
+     2      60 /opt/oracle/oradata/C1/4EB77F28E1B41294E063020011AC299B/datafile/o1_mf_undotbs1_nx4rrq6c_.dbf                                          
+     2     210 /opt/oracle/oradata/C1/4EB77F28E1B41294E063020011AC299B/datafile/o1_mf_system_nx4rr70j_.dbf                                            
+
+6 rows selected.
+
+SQL> 
+SQL> select t.con_id, t.name, t.bigfile
+  2  from v$tablespace t
+  3  order by con_id , ts# ;
+
+CON_ID NAME                           BIG                                                                                                             
+------ ------------------------------ ---                                                                                                             
+     1 SYSTEM                         YES                                                                                                             
+     1 SYSAUX                         YES                                                                                                             
+     1 UNDOTBS1                       NO                                                                                                              
+     1 TEMP                           NO                                                                                                              
+     2 SYSTEM                         YES                                                                                                             
+     2 SYSAUX                         YES                                                                                                             
+     2 UNDOTBS1                       NO                                                                                                              
+     2 TEMP                           NO                                                                                                              
+
+8 rows selected.
+
+SQL> 
+SQL> 
+SQL> set echo off
+.
+End of 1_crdb.sql
+.
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+.
+First Start, only works if init-file is present
+.
+SQL> 
+SQL> startup nomount
+ORACLE instance started.
+
+Total System Global Area 4292062776 bytes                                       
+Fixed Size                  5017144 bytes                                       
+Variable Size             822083584 bytes                                       
+Database Buffers         3456106496 bytes                                       
+Redo Buffers                8855552 bytes                                       
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  	    DATAFILE SIZE 801M AUTOEXTEND ON NEXT 100M	MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 602M AUTOEXTEND ON NEXT 100M MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	    TEMPFILE SIZE 103M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 12    SMALLFILE UNDO TABLESPACE "UNDOTBS1"
+ 13  	    DATAFILE SIZE 204M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 14    CHARACTER SET AL32UTF8
+ 15    NATIONAL CHARACTER SET AL16UTF16
+ 16    SET DEFAULT BIGFILE TABLESPACE
+ 17  LOGFILE
+ 18    GROUP 1	SIZE 200M,
+ 19    GROUP 2	SIZE 200M,
+ 20    GROUP 3	SIZE 200M
+ 21  USER SYS IDENTIFIED BY "&&sysPassword"
+ 22  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 23  enable pluggable database LOCAL UNDO ON
+ 24  ;
+
+Database created.
+
+Elapsed: 00:01:01.92
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2  MAXINSTANCES 8
+  3  MAXLOGHISTORY 1
+  4  MAXLOGFILES 16
+  5  MAXLOGMEMBERS 3
+  6  MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8  EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10  SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 11  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  5120K MAXSIZE UNLIMITED
+ 12  CHARACTER SET AL32UTF8
+ 13  NATIONAL CHARACTER SET AL16UTF16
+ 14  SET DEFAULT BIGFILE TABLESPACE
+ 15  LOGFILE GROUP 1  SIZE 200M,
+ 16  GROUP 2  SIZE 200M,
+ 17  GROUP 3  SIZE 200M
+ 18  USER SYS IDENTIFIED BY "&&sysPassword" USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 19  enable pluggable database LOCAL UNDO ON;
+CREATE DATABASE "C1"
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-01100: database already mounted 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+Elapsed: 00:00:00.00
+SQL> 
+SQL> 
+SQL> CREATE DATABASE C1
+  2  EXTENT MANAGEMENT LOCAL
+  3  DEFAULT TABLESPACE users
+  4  DEFAULT TEMPORARY TABLESPACE temp
+  5  UNDO TABLESPACE undotbs1
+  6    CHARACTER SET AL32UTF8
+  7  ENABLE PLUGGABLE DATABASE
+  8  	SEED
+  9  	SYSTEM DATAFILES SIZE 40M AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED
+ 10  	SYSAUX DATAFILES SIZE 40M;
+CREATE DATABASE C1
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-01100: database already mounted 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+Elapsed: 00:00:00.00
+SQL> 
+SQL> --enable pluggable database
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/oradata/C1/control01.ctl'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+1 row selected.
+
+Elapsed: 00:00:00.03
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> -- check files..
+SQL> @chk_crdb1
+SQL> rem
+SQL> rem checks after first crdb
+SQL> rem
+SQL> 
+SQL> column con_id     format 9999
+SQL> column mb	       format 999999
+SQL> column fname      format A100
+SQL> 
+SQL> column db_name    format A15
+SQL> column pdb_name   format A15
+SQL> 
+SQL> column dbid       format 999999999999
+SQL> column guid       format A33
+SQL> column omode      format A11
+SQL> column restricted format A10
+SQL> 
+SQL> set linesize 150
+SQL> 
+SQL> select con_id, dbid, name, log_mode, open_mode from v$database ;
+
+CON_ID          DBID NAME      LOG_MODE     OPEN_MODE                                                                                                 
+------ ------------- --------- ------------ --------------------                                                                                      
+     0    4092492608 C1        NOARCHIVELOG READ WRITE                                                                                                
+
+1 row selected.
+
+Elapsed: 00:00:00.02
+SQL> 
+SQL> select con_id, name pdb_name, open_mode omode, restricted, dbid , guid
+  2  from v$pdbs ;
+
+CON_ID PDB_NAME        OMODE       RESTRICTED          DBID GUID                                                                                      
+------ --------------- ----------- ---------- ------------- ---------------------------------                                                         
+     2 PDB$SEED        READ ONLY   NO            3671417934 4EB7F1D82F2D155CE063020011AC835F                                                          
+
+1 row selected.
+
+Elapsed: 00:00:00.01
+SQL> 
+SQL> select con_id, bytes / ( 1024*1024) as mb,  name fname
+  2  from v$datafile
+  3  order by con_id;
+
+CON_ID      MB FNAME                                                                                                                                  
+------ ------- ----------------------------------------------------------------------------------------------------                                   
+     1     801 /opt/oracle/oradata/C1/datafile/o1_mf_system_nx4tn4tt_.dbf                                                                             
+     1     602 /opt/oracle/oradata/C1/datafile/o1_mf_sysaux_nx4tnmpg_.dbf                                                                             
+     1     204 /opt/oracle/oradata/C1/datafile/o1_mf_undotbs1_nx4tnr04_.dbf                                                                           
+     2     181 /opt/oracle/oradata/C1/4EB7F1D82F2D155CE063020011AC835F/datafile/o1_mf_sysaux_nx4tnp1c_.dbf                                            
+     2      61 /opt/oracle/oradata/C1/4EB7F1D82F2D155CE063020011AC835F/datafile/o1_mf_undotbs1_nx4tns1m_.dbf                                          
+     2     240 /opt/oracle/oradata/C1/4EB7F1D82F2D155CE063020011AC835F/datafile/o1_mf_system_nx4tncdh_.dbf                                            
+
+6 rows selected.
+
+Elapsed: 00:00:00.01
+SQL> 
+SQL> select t.con_id, t.name, t.bigfile
+  2  from v$tablespace t
+  3  order by con_id , ts# ;
+
+CON_ID NAME                           BIG                                                                                                             
+------ ------------------------------ ---                                                                                                             
+     1 SYSTEM                         YES                                                                                                             
+     1 SYSAUX                         YES                                                                                                             
+     1 UNDOTBS1                       NO                                                                                                              
+     1 TEMP                           NO                                                                                                              
+     2 SYSTEM                         YES                                                                                                             
+     2 SYSAUX                         YES                                                                                                             
+     2 UNDOTBS1                       NO                                                                                                              
+     2 TEMP                           NO                                                                                                              
+
+8 rows selected.
+
+Elapsed: 00:00:00.00
+SQL> 
+SQL> 
+SQL> set echo off
+.
+End of 1_crdb.sql
+.
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+.
+First Start, only works if init-file is present
+.
+SQL> 
+SQL> startup nomount
+ORACLE instance started.
+
+Total System Global Area 4292062776 bytes                                       
+Fixed Size                  5017144 bytes                                       
+Variable Size             822083584 bytes                                       
+Database Buffers         3456106496 bytes                                       
+Redo Buffers                8855552 bytes                                       
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  	    DATAFILE SIZE 801M AUTOEXTEND ON NEXT 100M	MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 602M AUTOEXTEND ON NEXT 100M MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	    TEMPFILE SIZE 103M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 12    SMALLFILE UNDO TABLESPACE "UNDOTBS1"
+ 13  	    DATAFILE SIZE 204M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 14    CHARACTER SET AL32UTF8
+ 15    NATIONAL CHARACTER SET AL16UTF16
+ 16    SET DEFAULT BIGFILE TABLESPACE
+ 17  LOGFILE
+ 18    GROUP 1	SIZE 200M,
+ 19    GROUP 2	SIZE 200M,
+ 20    GROUP 3	SIZE 200M
+ 21  USER SYS IDENTIFIED BY "&&sysPassword"
+ 22  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 23  enable pluggable database
+ 24  LOCAL UNDO ON
+ 25  ;
+
+Database created.
+
+Elapsed: 00:01:06.56
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2  MAXINSTANCES 8
+  3  MAXLOGHISTORY 1
+  4  MAXLOGFILES 16
+  5  MAXLOGMEMBERS 3
+  6  MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8  EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10  SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 11  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  5120K MAXSIZE UNLIMITED
+ 12  CHARACTER SET AL32UTF8
+ 13  NATIONAL CHARACTER SET AL16UTF16
+ 14  SET DEFAULT BIGFILE TABLESPACE
+ 15  LOGFILE GROUP 1  SIZE 200M,
+ 16  GROUP 2  SIZE 200M,
+ 17  GROUP 3  SIZE 200M
+ 18  USER SYS IDENTIFIED BY "&&sysPassword" USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 19  enable pluggable database LOCAL UNDO ON;
+CREATE DATABASE "C1"
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-01100: database already mounted 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+Elapsed: 00:00:00.00
+SQL> 
+SQL> 
+SQL> CREATE DATABASE C1
+  2  EXTENT MANAGEMENT LOCAL
+  3  DEFAULT TABLESPACE users
+  4  DEFAULT TEMPORARY TABLESPACE temp
+  5  UNDO TABLESPACE undotbs1
+  6    CHARACTER SET AL32UTF8
+  7  ENABLE PLUGGABLE DATABASE
+  8  	SEED
+  9  	SYSTEM DATAFILES SIZE 40M AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED
+ 10  	SYSAUX DATAFILES SIZE 40M;
+CREATE DATABASE C1
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-01100: database already mounted 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+Elapsed: 00:00:00.01
+SQL> 
+SQL> --enable pluggable database
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/oradata/C1/control01.ctl'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+1 row selected.
+
+Elapsed: 00:00:00.03
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> -- check files..
+SQL> @chk_crdb1
+SQL> rem
+SQL> rem checks after first crdb
+SQL> rem
+SQL> 
+SQL> column con_id     format 9999
+SQL> column mb	       format 999999
+SQL> column fname      format A100
+SQL> 
+SQL> column db_name    format A15
+SQL> column pdb_name   format A15
+SQL> 
+SQL> column dbid       format 999999999999
+SQL> column guid       format A33
+SQL> column omode      format A11
+SQL> column restricted format A10
+SQL> 
+SQL> set linesize 150
+SQL> 
+SQL> select con_id, dbid, name, log_mode, open_mode from v$database ;
+
+CON_ID          DBID NAME      LOG_MODE     OPEN_MODE                                                                                                 
+------ ------------- --------- ------------ --------------------                                                                                      
+     0    4092501389 C1        NOARCHIVELOG READ WRITE                                                                                                
+
+1 row selected.
+
+Elapsed: 00:00:00.03
+SQL> 
+SQL> select con_id, name pdb_name, open_mode omode, restricted, dbid , guid
+  2  from v$pdbs ;
+
+CON_ID PDB_NAME        OMODE       RESTRICTED          DBID GUID                                                                                      
+------ --------------- ----------- ---------- ------------- ---------------------------------                                                         
+     2 PDB$SEED        READ ONLY   NO            2966776029 4EB9FD4E0EAF230FE063020011AC6D25                                                          
+
+1 row selected.
+
+Elapsed: 00:00:00.01
+SQL> 
+SQL> select con_id, bytes / ( 1024*1024) as mb,  name fname
+  2  from v$datafile
+  3  order by con_id;
+
+CON_ID      MB FNAME                                                                                                                                  
+------ ------- ----------------------------------------------------------------------------------------------------                                   
+     1     801 /opt/oracle/oradata/C1/datafile/o1_mf_system_nx536m1z_.dbf                                                                             
+     1     602 /opt/oracle/oradata/C1/datafile/o1_mf_sysaux_nx5372v2_.dbf                                                                             
+     1     204 /opt/oracle/oradata/C1/datafile/o1_mf_undotbs1_nx537868_.dbf                                                                           
+     2     181 /opt/oracle/oradata/C1/4EB9FD4E0EAF230FE063020011AC6D25/datafile/o1_mf_sysaux_nx5375wy_.dbf                                            
+     2      61 /opt/oracle/oradata/C1/4EB9FD4E0EAF230FE063020011AC6D25/datafile/o1_mf_undotbs1_nx53798w_.dbf                                          
+     2     240 /opt/oracle/oradata/C1/4EB9FD4E0EAF230FE063020011AC6D25/datafile/o1_mf_system_nx536t2g_.dbf                                            
+
+6 rows selected.
+
+Elapsed: 00:00:00.02
+SQL> 
+SQL> select t.con_id, t.name, t.bigfile
+  2  from v$tablespace t
+  3  order by con_id , ts# ;
+
+CON_ID NAME                           BIG                                                                                                             
+------ ------------------------------ ---                                                                                                             
+     1 SYSTEM                         YES                                                                                                             
+     1 SYSAUX                         YES                                                                                                             
+     1 UNDOTBS1                       NO                                                                                                              
+     1 TEMP                           NO                                                                                                              
+     2 SYSTEM                         YES                                                                                                             
+     2 SYSAUX                         YES                                                                                                             
+     2 UNDOTBS1                       NO                                                                                                              
+     2 TEMP                           NO                                                                                                              
+
+8 rows selected.
+
+Elapsed: 00:00:00.01
+SQL> 
+SQL> 
+SQL> set echo off
+.
+End of 1_crdb.sql
+.
+SQL> 
+SQL> -- todo:
+SQL> --  replace hardcoded SID ..
+SQL> 
+SQL> SET VERIFY      OFF
+SQL> set feedback    on
+SQL> set echo	     on
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+.
+First Start, only works if init-file is present
+.
+SQL> 
+SQL> startup nomount
+ORA-01078: failure in processing system parameters
+LRM-00109: could not open parameter file '/opt/oracle/product/26ai/dbhome_1/dbs/initC1.ora'
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  	    DATAFILE SIZE 801M AUTOEXTEND ON NEXT 100M	MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 602M AUTOEXTEND ON NEXT 100M MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	    TEMPFILE SIZE 103M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 12    SMALLFILE UNDO TABLESPACE "UNDOTBS1"
+ 13  	    DATAFILE SIZE 204M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 14    CHARACTER SET AL32UTF8
+ 15    NATIONAL CHARACTER SET AL16UTF16
+ 16    SET DEFAULT BIGFILE TABLESPACE
+ 17  LOGFILE
+ 18    GROUP 1	SIZE 200M,
+ 19    GROUP 2	SIZE 200M,
+ 20    GROUP 3	SIZE 200M
+ 21  USER SYS IDENTIFIED BY "&&sysPassword"
+ 22  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 23  enable pluggable database
+ 24  LOCAL UNDO ON
+ 25  ;
+CREATE DATABASE "C1"
+*
+ERROR at line 1:
+ORA-01034: The Oracle instance is not available for use. Start the instance. 
+Process ID: 0 
+Session ID: 0 Serial number: 0 
+Help: https://docs.oracle.com/error-help/db/ora-01034/ 
+
+
+Elapsed: 00:00:00.00
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2  MAXINSTANCES 8
+  3  MAXLOGHISTORY 1
+  4  MAXLOGFILES 16
+  5  MAXLOGMEMBERS 3
+  6  MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8  EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10  SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 11  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  5120K MAXSIZE UNLIMITED
+ 12  CHARACTER SET AL32UTF8
+ 13  NATIONAL CHARACTER SET AL16UTF16
+ 14  SET DEFAULT BIGFILE TABLESPACE
+ 15  LOGFILE GROUP 1  SIZE 200M,
+ 16  GROUP 2  SIZE 200M,
+ 17  GROUP 3  SIZE 200M
+ 18  USER SYS IDENTIFIED BY "&&sysPassword" USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 19  enable pluggable database LOCAL UNDO ON;
+CREATE DATABASE "C1"
+*
+ERROR at line 1:
+ORA-01034: The Oracle instance is not available for use. Start the instance. 
+Process ID: 0 
+Session ID: 0 Serial number: 0 
+Help: https://docs.oracle.com/error-help/db/ora-01034/ 
+
+
+Elapsed: 00:00:00.00
+SQL> 
+SQL> 
+SQL> CREATE DATABASE C1
+  2  EXTENT MANAGEMENT LOCAL
+  3  DEFAULT TABLESPACE users
+  4  DEFAULT TEMPORARY TABLESPACE temp
+  5  UNDO TABLESPACE undotbs1
+  6    CHARACTER SET AL32UTF8
+  7  ENABLE PLUGGABLE DATABASE
+  8  	SEED
+  9  	SYSTEM DATAFILES SIZE 40M AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED
+ 10  	SYSAUX DATAFILES SIZE 40M;
+CREATE DATABASE C1
+*
+ERROR at line 1:
+ORA-01034: The Oracle instance is not available for use. Start the instance. 
+Process ID: 0 
+Session ID: 0 Serial number: 0 
+Help: https://docs.oracle.com/error-help/db/ora-01034/ 
+
+
+Elapsed: 00:00:00.00
+SQL> 
+SQL> --enable pluggable database
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files'
+*
+ERROR at line 1:
+ORA-01034: The Oracle instance is not available for use. Start the instance. 
+Process ID: 0 
+Session ID: 0 Serial number: 0 
+Help: https://docs.oracle.com/error-help/db/ora-01034/ 
+
+
+Elapsed: 00:00:00.01
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+Enter value for ctl_files: 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> exit
+SQL> 
+SQL> -- todo:
+SQL> --  replace hardcoded SID ..
+SQL> 
+SQL> SET VERIFY      OFF
+SQL> set feedback    on
+SQL> set echo	     on
+SQL> 
+SQL> connect "SYS"/"&&sysPassword" as SYSDBA
+Connected to an idle instance.
+SQL> 
+SQL> set echo off
+.
+First Start, only works if init-file is present
+.
+SQL> 
+SQL> startup nomount
+ORACLE instance started.
+
+Total System Global Area 4292062776 bytes                                       
+Fixed Size                  5017144 bytes                                       
+Variable Size             822083584 bytes                                       
+Database Buffers         3456106496 bytes                                       
+Redo Buffers                8855552 bytes                                       
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2    MAXINSTANCES 8
+  3    MAXLOGHISTORY 1
+  4    MAXLOGFILES 16
+  5    MAXLOGMEMBERS 3
+  6    MAXDATAFILES 1024
+  7  	    DATAFILE SIZE 801M AUTOEXTEND ON NEXT 100M	MAXSIZE UNLIMITED
+  8    EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 602M AUTOEXTEND ON NEXT 100M MAXSIZE UNLIMITED
+ 10    SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+ 11  	    TEMPFILE SIZE 103M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 12    SMALLFILE UNDO TABLESPACE "UNDOTBS1"
+ 13  	    DATAFILE SIZE 204M AUTOEXTEND ON NEXT  50M MAXSIZE UNLIMITED
+ 14    CHARACTER SET AL32UTF8
+ 15    NATIONAL CHARACTER SET AL16UTF16
+ 16    SET DEFAULT BIGFILE TABLESPACE
+ 17  LOGFILE
+ 18    GROUP 1	SIZE 200M,
+ 19    GROUP 2	SIZE 200M,
+ 20    GROUP 3	SIZE 200M
+ 21  USER SYS IDENTIFIED BY "&&sysPassword"
+ 22  USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 23  enable pluggable database
+ 24  LOCAL UNDO ON
+ 25  ;
+
+Database created.
+
+Elapsed: 00:01:09.69
+SQL> 
+SQL> CREATE DATABASE "C1"
+  2  MAXINSTANCES 8
+  3  MAXLOGHISTORY 1
+  4  MAXLOGFILES 16
+  5  MAXLOGMEMBERS 3
+  6  MAXDATAFILES 1024
+  7  DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+  8  EXTENT MANAGEMENT LOCAL
+  9  SYSAUX DATAFILE SIZE 550M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
+ 10  SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  640K MAXSIZE UNLIMITED
+ 11  SMALLFILE UNDO TABLESPACE "UNDOTBS1" DATAFILE  SIZE 200M AUTOEXTEND ON NEXT  5120K MAXSIZE UNLIMITED
+ 12  CHARACTER SET AL32UTF8
+ 13  NATIONAL CHARACTER SET AL16UTF16
+ 14  SET DEFAULT BIGFILE TABLESPACE
+ 15  LOGFILE GROUP 1  SIZE 200M,
+ 16  GROUP 2  SIZE 200M,
+ 17  GROUP 3  SIZE 200M
+ 18  USER SYS IDENTIFIED BY "&&sysPassword" USER SYSTEM IDENTIFIED BY "&&systemPassword"
+ 19  enable pluggable database LOCAL UNDO ON;
+CREATE DATABASE "C1"
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-01100: database already mounted 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+Elapsed: 00:00:00.00
+SQL> 
+SQL> 
+SQL> CREATE DATABASE C1
+  2  EXTENT MANAGEMENT LOCAL
+  3  DEFAULT TABLESPACE users
+  4  DEFAULT TEMPORARY TABLESPACE temp
+  5  UNDO TABLESPACE undotbs1
+  6    CHARACTER SET AL32UTF8
+  7  ENABLE PLUGGABLE DATABASE
+  8  	SEED
+  9  	SYSTEM DATAFILES SIZE 40M AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED
+ 10  	SYSAUX DATAFILES SIZE 40M;
+CREATE DATABASE C1
+*
+ERROR at line 1:
+ORA-01501: CREATE DATABASE failed 
+ORA-01100: database already mounted 
+Help: https://docs.oracle.com/error-help/db/ora-01501/ 
+
+
+Elapsed: 00:00:00.01
+SQL> 
+SQL> --enable pluggable database
+SQL> 
+SQL> set linesize 2048;
+SQL> 
+SQL> column ctl_files NEW_VALUE ctl_files;
+SQL> 
+SQL> select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
+
+CTL_FILES                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+control_files='/opt/oracle/oradata/C1/control01.ctl'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+1 row selected.
+
+Elapsed: 00:00:00.02
+SQL> 
+SQL> set echo on
+SQL> host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
+
+SQL> 
+SQL> -- check files..
+SQL> @chk_crdb1
+SQL> rem
+SQL> rem checks after first crdb
+SQL> rem
+SQL> 
+SQL> column con_id     format 9999
+SQL> column mb	       format 999999
+SQL> column fname      format A100
+SQL> 
+SQL> column db_name    format A15
+SQL> column pdb_name   format A15
+SQL> 
+SQL> column dbid       format 999999999999
+SQL> column guid       format A33
+SQL> column omode      format A11
+SQL> column restricted format A10
+SQL> 
+SQL> set linesize 150
+SQL> 
+SQL> select con_id, dbid, name, log_mode, open_mode from v$database ;
+
+CON_ID          DBID NAME      LOG_MODE     OPEN_MODE                                                                                                 
+------ ------------- --------- ------------ --------------------                                                                                      
+     0    4092502134 C1        NOARCHIVELOG READ WRITE                                                                                                
+
+1 row selected.
+
+Elapsed: 00:00:00.02
+SQL> 
+SQL> select con_id, name pdb_name, open_mode omode, restricted, dbid , guid
+  2  from v$pdbs ;
+
+CON_ID PDB_NAME        OMODE       RESTRICTED          DBID GUID                                                                                      
+------ --------------- ----------- ---------- ------------- ---------------------------------                                                         
+     2 PDB$SEED        READ ONLY   NO             502659894 4EBA29AF98F4249FE063020011ACA446                                                          
+
+1 row selected.
+
+Elapsed: 00:00:00.02
+SQL> 
+SQL> select con_id, bytes / ( 1024*1024) as mb,  name fname
+  2  from v$datafile
+  3  order by con_id;
+
+CON_ID      MB FNAME                                                                                                                                  
+------ ------- ----------------------------------------------------------------------------------------------------                                   
+     1     801 /opt/oracle/oradata/C1/datafile/o1_mf_system_nx53xvmr_.dbf                                                                             
+     1     602 /opt/oracle/oradata/C1/datafile/o1_mf_sysaux_nx53y8hk_.dbf                                                                             
+     1     204 /opt/oracle/oradata/C1/datafile/o1_mf_undotbs1_nx53ydxn_.dbf                                                                           
+     2     181 /opt/oracle/oradata/C1/4EBA29AF98F4249FE063020011ACA446/datafile/o1_mf_sysaux_nx53ybyz_.dbf                                            
+     2      61 /opt/oracle/oradata/C1/4EBA29AF98F4249FE063020011ACA446/datafile/o1_mf_undotbs1_nx53yfvm_.dbf                                          
+     2     240 /opt/oracle/oradata/C1/4EBA29AF98F4249FE063020011ACA446/datafile/o1_mf_system_nx53y0ml_.dbf                                            
+
+6 rows selected.
+
+Elapsed: 00:00:00.26
+SQL> 
+SQL> select t.con_id, t.name, t.bigfile
+  2  from v$tablespace t
+  3  order by con_id , ts# ;
+
+CON_ID NAME                           BIG                                                                                                             
+------ ------------------------------ ---                                                                                                             
+     1 SYSTEM                         YES                                                                                                             
+     1 SYSAUX                         YES                                                                                                             
+     1 UNDOTBS1                       NO                                                                                                              
+     1 TEMP                           NO                                                                                                              
+     2 SYSTEM                         YES                                                                                                             
+     2 SYSAUX                         YES                                                                                                             
+     2 UNDOTBS1                       NO                                                                                                              
+     2 TEMP                           NO                                                                                                              
+
+8 rows selected.
+
+Elapsed: 00:00:00.08
+SQL> 
+SQL> 
+SQL> set echo off
+.
+End of 1_crdb.sql
+.
