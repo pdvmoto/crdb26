@@ -1,5 +1,5 @@
 
--- C1.sql: sript to call others 
+-- 0_crdb.sql: sript to call others 
 
 set verify off
 
@@ -26,24 +26,30 @@ connect / as sysdba
 -- host command must be 1 line inside sqlplus ... 
 host ${ORACLE_HOME}/bin/orapwd file=${ORACLE_HOME}/dbs/orapw${ORACLE_SID} password=&&sysPassword force=y format=12
 
---
-@${ORACLE_BASE}/admin/${ORACLE_SID}/scripts/1_crdb.sql
+-- should we give a path ? (rather not, dont limit where we run from)
+-- @${ORACLE_BASE}/admin/${ORACLE_SID}/scripts/1_crdb.sql
 
-echo Exit  after CDBhere
+@1_crdb.sql
+
+prompt .
+prompt 1_crdb.sql: done. DB created
+prompt .
+prompt next is Files (1 user tablepace) and Catalog
+prompt .
+
+-- for the moment, just test 1_crdb
+-- spool off
+-- exit
+
+@2_crdb_catalog.sql
+
+prompt .
+prompt 2_crdb_catalog.sql: done. Catalog created
+prompt .
+prompt next are components from 3_crdb
+prompt . 
+
+@3_crdb_comp.sql
 
 exit 
 
-@/opt/oracle/admin/c2/scripts/CreateDBFiles.sql
-@/opt/oracle/admin/c2/scripts/CreateDBCatalog.sql
-@/opt/oracle/admin/c2/scripts/JServer.sql
-@/opt/oracle/admin/c2/scripts/context.sql
-@/opt/oracle/admin/c2/scripts/cwmlite.sql
-@/opt/oracle/admin/c2/scripts/spatial.sql
-@/opt/oracle/admin/c2/scripts/CreateClustDBViews.sql
-@/opt/oracle/admin/c2/scripts/lockAccount.sql
-@/opt/oracle/admin/c2/scripts/postDBCreation.sql
-@/opt/oracle/admin/c2/scripts/PDBCreation.sql
-@/opt/oracle/admin/c2/scripts/plug_p1.sql
-@/opt/oracle/admin/c2/scripts/postPDBCreation_p1.sql
-@/opt/oracle/admin/c2/scripts/plug_p2.sql
-@/opt/oracle/admin/c2/scripts/postPDBCreation_p2.sql

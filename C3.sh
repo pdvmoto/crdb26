@@ -55,8 +55,7 @@ echo   $ORACLE_SID:/opt/oracle/product/26ai/dbhome_1:Y
 
 # now go do the SQL..
 
-/opt/oracle/product/26ai/dbhome_1/bin/sqlplus /nolog \
-	@0_crdb.sql
+$ORACLE_HOME/bin/sqlplus /nolog @0_crdb.sql
 
 echo .
 echo 0_crdb does Calls to 2_crdb.sql, 3_ etc..
