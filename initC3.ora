@@ -1,0 +1,49 @@
+#
+# edited from v26ai generated 
+
+db_name=C3
+
+control_files       =/opt/oracle/oradata/C3/control01.ctl
+
+db_create_file_dest=/opt/oracle/oradata
+diagnostic_dest    =/opt/oracle
+
+
+# db_block_size=8192
+# open_cursors=300
+ 
+# keep dflt for now
+# compatible=23.6.0
+# enable_pluggable_database=true
+ 
+###########################################
+# NLS
+###########################################
+# nls_language="AMERICAN"
+# nls_territory="AMERICA"
+ 
+###########################################
+# Network Registration
+###########################################
+#local_listener=LISTENER_C2
+ 
+###########################################
+# Processes and Sessions
+###########################################
+# processes=320
+# processes=320
+ 
+###########################################
+# SGA Memory
+###########################################
+# sga_target=2352m
+# pga_aggregate_target=784m
+sga_target=4096m
+
+remote_login_passwordfile=EXCLUSIVE
+ 
+# dispatchers="(PROTOCOL=TCP) (SERVICE=C3XDB)"
+ 
+# we need one
+undo_tablespace=UNDOTBS1
+ 
