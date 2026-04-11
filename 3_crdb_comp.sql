@@ -39,6 +39,20 @@ set echo on
 DEFINE CATCTL="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catctl.pl -n 4 -l /tmp "
 DEFINE CATCON="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catcon.pl -n 1 -l /tmp -v "
 
+prompt .
+prompt try disabling MZ processes to go faster.
+prompt .
+
+BEGIN
+  DBMS_AUTO_TASK_ADMIN.DISABLE(
+    client_name => 'sql tuning advisor',
+    operation   => NULL,
+    window_name => NULL);
+END;
+/
+
+host read -t10 -p "disabled mz processes?" abc
+
 -- first: jserver
 -- why do all script re-connect ? 
 
@@ -59,8 +73,8 @@ SET VERIFY OFF
 connect "SYS"/"&&sysPassword" as SYSDBA
 set echo on
 
-host &&CATCON -b catctx    -c 'PDB$SEED CDB$ROOT' -U  "SYS"/"&&sysPassword"  -a 1   $ORACLE_HOME/ctx/admin/catctx.sql;
-host &&CATCON -b dr0defin  -c 'PDB$SEED CDB$ROOT' -U  "SYS"/"&&sysPassword"  -a 1   $ORACLE_HOME/ctx/admin/defaults/dr0defin.sql;
+host &&CATCON -b catctx    -c 'PDB$SEED CDB$ROOT' -U  "SYS"/"&&sysPassword"  -a 1   $ORACLE_HOME/ctx/admin/catctx.sql 1Xbkfsdcdf1ggh_123 1SYSAUX 1TEMP 1LOCK ;
+host &&CATCON -b dr0defin  -c 'PDB$SEED CDB$ROOT' -U  "SYS"/"&&sysPassword"  -a 1   $ORACLE_HOME/ctx/admin/defaults/dr0defin.sql 1\"AMERICAN\";
 host &&CATCON -b dbmsxdbt  -c 'PDB$SEED CDB$ROOT' -U  "SYS"/"&&sysPassword"         $ORACLE_HOME/rdbms/admin/dbmsxdbt.sql;
 
 -- cwmlite 
@@ -69,7 +83,7 @@ SET VERIFY OFF
 set echo on
 connect "SYS"/"&&sysPassword" as SYSDBA
 
-host &&CATCON -b  olap     -c 'PDB$SEED CDB$ROOT'  -U  "SYS"/"&&sysPassword"  -a 1 $ORACLE_HOME/olap/admin/olap.sql;
+host &&CATCON -b  olap     -c 'PDB$SEED CDB$ROOT'  -U  "SYS"/"&&sysPassword"  -a 1 $ORACLE_HOME/olap/admin/olap.sql 1SYSAUX 1TEMP;
 
 -- next: spatial 
 

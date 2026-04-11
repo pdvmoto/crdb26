@@ -37,9 +37,11 @@ prompt .
 prompt next is Files (1 user tablepace) and Catalog
 prompt .
 
--- for the moment, just test 1_crdb
+-- if needed, just test 1_crdb
 -- spool off
 -- exit
+
+connect / as sysdba 
 
 @2_crdb_catalog.sql
 

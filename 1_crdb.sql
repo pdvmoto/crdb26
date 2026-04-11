@@ -2,7 +2,7 @@
 spool log_1_crdb.log append
 
 -- todo:
---  replace hardcoded SID ..
+-- replace hardcoded SID ..
 -- sizes: cdb-system and sysaux: 1G + 200M
 -- sizes: cdb-undo: 300M + 100M
 -- sizes: pdb :  system + sysaux : 500M + 100M 

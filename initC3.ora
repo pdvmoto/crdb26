@@ -8,9 +8,8 @@ control_files       =/opt/oracle/oradata/C3/control01.ctl
 db_create_file_dest=/opt/oracle/oradata
 diagnostic_dest    =/opt/oracle
 
-
 # db_block_size=8192
-# open_cursors=300
+open_cursors=300
  
 # keep dflt for now
 # compatible=23.6.0
@@ -31,7 +30,7 @@ diagnostic_dest    =/opt/oracle
 # Processes and Sessions
 ###########################################
 # processes=320
-# processes=320
+processes=320
  
 ###########################################
 # SGA Memory
