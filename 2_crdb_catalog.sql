@@ -38,6 +38,13 @@ ALTER DATABASE DEFAULT TABLESPACE "USERS";
 DEFINE CATCTL="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catctl.pl -n 1 -l /tmp "
 DEFINE CATCON="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catcon.pl -n 1 -l /tmp -v "
 
+prompt .
+prompt catctl and catcon ...
+prompt &&CATCTL
+prompt &&CATCON
+prompt .
+
+host read -t 15 -p " check catctl catcon " abc 
 
 -- these prep-stmnts were in generated script:
 alter session set "_oracle_script"=true;
