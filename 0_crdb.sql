@@ -17,7 +17,7 @@ set verify off
 --	- make sript runnable from any location by keeping pwd ?
 --
 
-spool 0_crdb append 
+spool log_0_crdb.log append 
 
 set echo on
 
@@ -39,7 +39,7 @@ prompt .
 
 -- if needed, just test 1_crdb
 -- spool off
--- exit
+exit
 
 connect / as sysdba 
 

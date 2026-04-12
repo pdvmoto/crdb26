@@ -123,7 +123,7 @@ alter session set container=pdb$seed;
 alter session set container=pdb$seed;
 
 
--- next: Post DB creation
+-- next: Post DB creation (after cdb + seed, before pdbs )
 
 SET VERIFY OFF
 

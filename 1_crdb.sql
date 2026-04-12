@@ -2,7 +2,8 @@
 spool log_1_crdb.log append
 
 -- todo:
--- replace hardcoded SID ..
+-- replace hardcoded SID by &1, default C1 ?
+-- 
 -- sizes: cdb-system and sysaux: 1G + 200M
 -- sizes: cdb-undo: 300M + 100M
 -- sizes: pdb :  system + sysaux : 500M + 100M 
@@ -55,9 +56,10 @@ LOCAL UNDO ON
 
 prompt .
 prompt . DB Created
+prompt .
 host read -t 15 -p "hit enter to continue..." abc
 
-CREATE DATABASE "C1"
+CREATE DATABASE "C1-notyet"
 MAXINSTANCES 8
 MAXLOGHISTORY 1
 MAXLOGFILES 16
@@ -93,10 +95,10 @@ ENABLE PLUGGABLE DATABASE
 
 set linesize 2048;
 
-column ctl_files NEW_VALUE ctl_files;
-
-select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
-
+-- we have the ctl-file(s) defined in init-ora
+-- 
+-- column ctl_files NEW_VALUE ctl_files;
+-- select concat('control_files=''', concat(replace(value, ', ', ''','''), '''')) ctl_files from v$parameter where name ='control_files';
 -- set echo on
 -- host echo &ctl_files >>/opt/oracle/admin/c2/scripts/init.ora;
 
@@ -108,5 +110,7 @@ set echo off
 prompt .
 prompt End of 1_crdb.sql
 prompt .
+
+host read -t15 -p "CRDB-1 is now done. verify... " abc
 
 spool off
