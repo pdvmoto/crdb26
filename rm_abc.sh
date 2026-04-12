@@ -14,6 +14,10 @@ rm $ORACLE_HOME/dbs/hc_$ORACLE_SID*.dat
 rm $ORACLE_HOME/dbs/lk$ORACLE_SID*
 
 rm $ORACLE_BASE/admin/$ORACLE_SID/xdb_wallet/*.*
+rm $ORACLE_BASE/admin/$ORACLE_SID/adump/*.*
+rm $ORACLE_BASE/admin/$ORACLE_SID/bdump/*.*
+rm $ORACLE_BASE/admin/$ORACLE_SID/udump/*.*
+
 
 set -v -x 
 rm -rf $ORACLE_BASE/diag/rdbms/${ORACLE_SID_LOWER}

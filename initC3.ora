@@ -8,6 +8,16 @@ control_files       =/opt/oracle/oradata/C3/control01.ctl
 db_create_file_dest=/opt/oracle/oradata
 diagnostic_dest    =/opt/oracle
 
+# prevent OH from filling up. only cdump goes to diag by dflt.
+# make sure to create the dirs
+
+# old habit
+audit_file_dest       =/opt/oracle/admin/C3/adump
+
+# those belong in diag, but you may need to create dirs
+background_dump_des   =/opt/oracle/diag/c3/C3/bdump
+user_dump_des         =/opt/oracle/diag/c3/C3/udump
+
 # db_block_size=8192
 open_cursors=300
  

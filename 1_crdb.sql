@@ -8,6 +8,8 @@ spool log_1_crdb.log append
 -- sizes: cdb-undo: 300M + 100M
 -- sizes: pdb :  system + sysaux : 500M + 100M 
 -- sizes: pdb-undo : 300M + 100M
+-- 
+-- init.ora: bdump, cdump, udump to prevent OH from filling up
 
 SET VERIFY 	OFF
 set feedback  	on
@@ -79,7 +81,9 @@ GROUP 3  SIZE 200M
 USER SYS IDENTIFIED BY "&&sysPassword" USER SYSTEM IDENTIFIED BY "&&systemPassword"
 enable pluggable database LOCAL UNDO ON;
 
-
+-- keep this as smalles example.
+-- then grow it to include options and datafile sizes.
+-- original: all smallfiles ??
 CREATE DATABASE C1
 EXTENT MANAGEMENT LOCAL
 DEFAULT TABLESPACE users
