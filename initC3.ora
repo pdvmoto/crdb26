@@ -16,7 +16,7 @@ audit_file_dest       =/opt/oracle/admin/C3/adump
 
 # those belong in diag, but you may need to create dirs
 # background_dump_des   =/opt/oracle/diag/c3/C3/bdump
-# user_dump_des         =/opt/oracle/diag/c3/C3/udump
+user_dump_des         =/opt/oracle/diag/c3/C3/udump
 
 # db_block_size=8192
 open_cursors=300
