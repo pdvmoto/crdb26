@@ -2,8 +2,8 @@
 
 # C0.sh - minimalistic database, just for demo
 #
-# New ORACLE_SID is the name of the script.. 
-# carry that name everywhere..
+# Note: the new ORACLE_SID is the name of the script. 
+# we carry that name as $ORACLE_SID everywhere where it is needed.
 #
 # todo:
 # - SED-edit the init file and copy it to dbs
@@ -17,19 +17,16 @@ export ORACLE_SID
 
 cat <<EOF > init$ORACLE_SID.ora
 
+# need this to prevent ORA-01506
 db_name=$ORACLE_SID
 
-control_files       =/opt/oracle/oradata/$ORACLE_SID/control01.ctl
-
-db_create_file_dest=$ORACLE_BASE/oradata
-diagnostic_dest    =$ORACLE_BASE
-
-processes=320
- 
-sga_target=2352m
-pga_aggregate_target=784m
-
-remote_login_passwordfile=EXCLUSIVE
+# control_files       =/opt/oracle/oradata/$ORACLE_SID/control01.ctl
+# db_create_file_dest=$ORACLE_BASE/oradata
+# diagnostic_dest    =$ORACLE_BASE
+# processes=320
+sga_target=1500M
+pga_aggregate_target=512M
+# remote_login_passwordfile=EXCLUSIVE
  
 EOF
 
@@ -81,16 +78,26 @@ set echo on
 
 startup nomount 
 
+prompt .
+prompt Startup nomount done, now creating database... 
+prompt .
+
 create database $ORACLE_SID ;
 
+prompt .
+prompt DB creation done, now showing pdbs and some info ... 
+prompt .
+
 show pdbs
+
+@chk_crdb1
 
 EOF
 
 echo .
 echo Database $ORACLE_SID created...
 echo .
-echo Suggest to check datafiles (tiny) and parameters (dflts)
+echo Suggest to check tiny datafiles and dflt parameters 
 echo .
 read -t15 -p "Please Check" abc
 echo .
