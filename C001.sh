@@ -1,21 +1,17 @@
 #!/bin/sh
-#
+
 # C0.sh - minimalistic database, just for demo
 #
-# Note: the new ORACLE_SID is the basename of the script, without extention
+# Note: the new ORACLE_SID is the name of the script. 
 # we carry that name as $ORACLE_SID everywhere where it is needed.
 #
 # todo:
-#   - automatically report relevant data to stdout..
+# - SED-edit the init file and copy it to dbs
 # 
 
 ORACLE_SID="$(basename "$0")"
 ORACLE_SID="${ORACLE_SID%.*}"
 export ORACLE_SID
-
-# need this to find (dflt) alert-file
-export ORACLE_SID_LOWER=${ORACLE_SID,,}
-export ALERT_FILE=$ORACLE_BASE/diag/rdbms/$ORACLE_SID_LOWER/$ORACLE_SID/trace/alert_$ORACLE_SID.log
 
 # generate a new init.ora from env_variables, absolute minimum
 
@@ -23,13 +19,21 @@ cat <<EOF > init$ORACLE_SID.ora
 
 # need this to prevent ORA-01506
 db_name=$ORACLE_SID
+
+# control_files       =/opt/oracle/oradata/$ORACLE_SID/control01.ctl
+# db_create_file_dest=$ORACLE_BASE/oradata
+# diagnostic_dest    =$ORACLE_BASE
+# processes=320
+sga_target=1500M
+pga_aggregate_target=512M
+# remote_login_passwordfile=EXCLUSIVE
  
 EOF
 
 echo .
-echo You are about to create a new CDB : $ORACLE_SID
+echo You are about to create a new container DB : $ORACLE_SID
 echo .
-echo Check the env-variables and the init.ora:
+echo Next: check the env-variables and the init.ora:
 echo .
 echo "ORACLE_BASE= " $ORACLE_BASE
 echo "ORACLE_HOME= " $ORACLE_HOME
@@ -42,7 +46,7 @@ read -p "Control-C to cancel, if correct hit enter..." -t 10 abc
 echo . 
 
 #
-# creating paths, code from older-version of dbca-generated script
+# creating paths, code from generated script
 #
 OLD_UMASK=`umask`
 umask 0027
@@ -59,35 +63,24 @@ umask ${OLD_UMASK}
 
 cp init${ORACLE_SID}.ora ${ORACLE_HOME}/dbs/
 
-# we need a pwdfile, or do we? 
-# stricktly, you can do without
-# but without pwdfile you can not connect-sys from SQLDeveloper..
+# we need a pwdfile, or do we?
 orapwd file=${ORACLE_HOME}/dbs/orapw${ORACLE_SID} \
   password=oracle   \
   force=y format=12
 
-# now do the SQL..
+# now go do the SQL..
 
 sqlplus /nolog <<EOF
 
 conn / as sysdba 
 
-set timing on
-set echo   on
+set echo on
 
 startup nomount 
 
-set echo off
-
 prompt .
-prompt Startup nomount done, next is creating database... 
+prompt Startup nomount done, now creating database... 
 prompt .
-
-host read -t15 -p " hit enter to continue.." abc
-
-prompt .
-prompt .
-set echo on
 
 create database $ORACLE_SID ;
 
@@ -97,22 +90,17 @@ prompt .
 
 show pdbs
 
-set echo off
-
-@chk_early
+@chk_crdb1
 
 EOF
 
 echo .
 echo Database $ORACLE_SID created...
-echo Time elapsed is $SECONDS
 echo .
 echo Suggest to check tiny datafiles and dflt parameters 
 echo .
-read -t15 -p "Please Check, next is tail-alert.log" abc
+read -t15 -p "Please Check" abc
 echo .
-
-tail -n30 $ALERT_FILE
 
 exit 
 
