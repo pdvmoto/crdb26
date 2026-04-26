@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# C0.sh - minimalistic database, just for demo
+# C001.sh - create minimalistic database, and some inspection
 #
 # Note: the new ORACLE_SID is the name of the script. 
 # we carry that name as $ORACLE_SID everywhere where it is needed.
@@ -14,6 +14,7 @@ ORACLE_SID="${ORACLE_SID%.*}"
 export ORACLE_SID
 
 # generate a new init.ora from env_variables, absolute minimum
+# initially I only need the db_name
 
 cat <<EOF > init$ORACLE_SID.ora
 
@@ -24,8 +25,8 @@ db_name=$ORACLE_SID
 # db_create_file_dest=$ORACLE_BASE/oradata
 # diagnostic_dest    =$ORACLE_BASE
 # processes=320
-sga_target=1500M
-pga_aggregate_target=512M
+# sga_target=1500M
+# pga_aggregate_target=512M
 # remote_login_passwordfile=EXCLUSIVE
  
 EOF
@@ -63,7 +64,7 @@ umask ${OLD_UMASK}
 
 cp init${ORACLE_SID}.ora ${ORACLE_HOME}/dbs/
 
-# we need a pwdfile, or do we?
+# need a pwdfile, if only to be able to connect SQLDev for inspection
 orapwd file=${ORACLE_HOME}/dbs/orapw${ORACLE_SID} \
   password=oracle   \
   force=y format=12
@@ -80,6 +81,7 @@ startup nomount
 
 prompt .
 prompt Startup nomount done, now creating database... 
+prompt still with the simples command possible
 prompt .
 
 create database $ORACLE_SID ;
@@ -90,7 +92,11 @@ prompt .
 
 show pdbs
 
+set echo off
+
 @chk_crdb1
+
+-- @chk_early
 
 EOF
 
