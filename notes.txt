@@ -1,0 +1,26 @@
+
+-- this one good so far, 08May
+
+create database $ORACLE_SID
+  SET DEFAULT BIGFILE TABLESPACE
+    DATAFILE SIZE 1G  AUTOEXTEND ON  NEXT 201M  MAXSIZE UNLIMITED
+      EXTENT MANAGEMENT LOCAL
+  SYSAUX
+    DATAFILE SIZE 1G  AUTOEXTEND ON  NEXT 201M  MAXSIZE UNLIMITED
+  SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
+    TEMPFILE SIZE 100M AUTOEXTEND ON NEXT  51M MAXSIZE UNLIMITED
+  SMALLFILE UNDO TABLESPACE "UNDOTBS1"
+    DATAFILE SIZE 500M AUTOEXTEND ON NEXT  101M  MAXSIZE UNLIMITED
+LOGFILE                   /* create groups of larger files                  */
+  GROUP 1  SIZE 400M
+, GROUP 2  SIZE 400M
+, GROUP 3  SIZE 400M
+enable pluggable database /* enable+seed+sizes+localundo .. all 1 spec      */
+seed                      /* pre-emptively size these, undo dflt 100?       */
+  SYSTEM   DATAFILES SIZE 500M AUTOEXTEND ON NEXT 101M MAXSIZE UNLIMITED
+  SYSAUX   DATAFILES SIZE 500M autoextend on next 101M maxsize unlimited
+  undo tablespace
+  UNDOTBS1 datrafile size 200M autoextend on next 101M maxsize unlimited
+LOCAL UNDO ON             /* this will create an undo_ts ?                  */
+;
+

@@ -35,8 +35,8 @@ ALTER DATABASE DEFAULT TABLESPACE "USERS";
 -- notice how -l sends lofiles to /tmp
 -- notice how catctl does not have a -v
 
-DEFINE CATCTL="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catctl.pl -n 1 -l /tmp "
-DEFINE CATCON="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catcon.pl -n 1 -l /tmp -v "
+DEFINE CATCTL="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catctl.pl -n 4 -l /tmp "
+DEFINE CATCON="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catcon.pl -n 4 -l /tmp -v "
 
 prompt .
 prompt catctl and catcon ...
