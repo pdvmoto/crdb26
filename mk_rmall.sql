@@ -1,29 +1,27 @@
+
+-- for CRDB only, too risky to use elsewhere..
+
 set heading off
-set feedback off
-set verify off
+set feedb off
 
-conn / as sysdba 
-
-shutdown abort 
-
-startup mount 
-
-spool abc.rm
-
-host echo '#!'$0
-
-select 'rm ' || name from v$tempfile ;
+-- first
+-- data, temp, redo, control
+-- then some parameters.
+-- but refrain from too many parameters and options,
+-- as others may share the destination-directory
+--
 
 select 'rm ' || name from v$datafile ;
+
+select 'rm ' || name from v$tempfile ;
 
 select 'rm ' || member from v$logfile ;
 
 select 'rm ' || name from v$controlfile ;
 
--- some more
+
 -- files at destinations pointed by parameters, Risky!
 
-/** 
 select 'rm ' || p.value || '/*.*'
 from v$parameter p
 where p.value is not null
@@ -45,10 +43,3 @@ host echo rm $ORACLE_HOME/dbs/init$ORACLE_SID.ora
 host echo rm $ORACLE_HOME/dbs/spfile$ORACLE_SID.ora
 host echo rm $ORACLE_HOME/dbs/orapw$ORACLE_SID
 
-**/ 
-
-spool off
-
-shutdown abort 
-
-host echo Instance shutdown, now check and use abc.rm to remove db-files

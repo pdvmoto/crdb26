@@ -1,62 +1,53 @@
 #!/bin/sh
-
-# C002a.sh - create minimalistic database, C002-edited
+#
+# SID.sh - create minimalistic database, testing purposes for now
 #
 # Note: the new ORACLE_SID is the name of the script. 
 # we carry that name as $ORACLE_SID everywhere where it is needed.
 #
 # todo:
-# - SED-edit the init file and copy it to dbs: better use cat<<EOF
+#  - lots of ideas
 # 
+
+# allow interrupt, notably on read -t15
+
+trap 'echo; echo "Interrupted while processing $0 "; exit 130' INT
 
 ORACLE_SID="$(basename "$0")"
 ORACLE_SID="${ORACLE_SID%.*}"
-export ORACLE_SID
+ORACLE_SID_LOWER=${ORACLE_SID,,}
 
-# #######################  Create INIT . ORA  ###################
+export ORACLE_SID
+export ORACLE_SID_LOWER
+
+########## INIT dot ORA ###########
+#
 # generate a new init.ora from env_variables, absolute minimum
-# initially I only need the db_name
-# later I added some tweaks to speed: control_mngmt=none
+# initially I only needed the db_name
+# later I added the parameters from DBCA as well
+# can and Will Experiment here.
 
 cat <<EOF > init$ORACLE_SID.ora
 
-# need this to prevent ORA-01506
+                                        # need this to prevent ORA-01506
 db_name=$ORACLE_SID
 
-# added file-destinations after first attempts
+                                        # file-destinations, control where...
+                                        # add log-dest and flra if needed
+db_create_file_dest = /opt/oracle/oradata
+control_files       = /opt/oracle/oradata/$ORACLE_SID/controlfile/control01.ctl
 
-# set this explicitly.. add log-dest and flra if needed
-control_files       = /opt/oracle/oradata/$ORACLE_SID/control01.ctl
-# db_create_file_dest = /opt/oracle/oradata
-  db_create_file_dest = /tmp/oradata/
+                                        # this will create the diag if needed 
+diagnostic_dest     = $ORACLE_BASE
 
-# check: this will create the diag if needed 
-# diagnostic_dest     = $ORACLE_BASE
-  diagnostic_dest     = /tmp/oradiag/
+                                        # best solution is Unified Auditing
+audit_file_dest     = $ORACLE_BASE/audit
 
-# reduce statistics activity during startup
-# check that basic leads to timed_statistics=false
-# so setting typical or all will also initiate timed_statistics=true
-control_management_pack_access=NONE
-# statistics_level=BASIC
-
-# audit might be special, but best solution is Unified Auditing
-# audit_file_dest     = $ORACLE_BASE/audit
-
-# note: core_dump seems set to diag by dflt, why not bdump and udump?
-# and even though obsolete, they still got pointed flt to oracle_home ?
-# background_dump_dest  = $ORACLE_BASE/admin/$ORACLE_SID/bdump
-# user_dump_dest        = $ORACLE_BASE/admin/$ORACLE_SID/udump
-
-# now some memory-settings, 
-# I took those 1500m from the settings of the FREE conainers..
-sga_target=3500M
+                                        # memory settings, fit inside FREE
+sga_target=1500M
 pga_aggregate_target=512M
-processes=175
 
 EOF
-
-# ####################### end of init ###################
 
 echo .
 echo You are about to create a new container DB : $ORACLE_SID
@@ -66,11 +57,11 @@ echo .
 echo "ORACLE_BASE= " $ORACLE_BASE
 echo "ORACLE_HOME= " $ORACLE_HOME
 echo .
-echo "ORACLE_SID=  " $ORACLE_SID
+echo "ORACLE_SID=  " $ORACLE_SID ... "(" $ORACLE_SID_LOWER ")" 
 echo . 
 ls -l init${ORACLE_SID}.ora
 echo .
-read -p "Control-C to cancel, if correct hit enter..." -t 10 abc
+read -p "Control-C to cancel, if correct hit enter..." -t10 abc
 echo . 
 
 #
@@ -79,14 +70,14 @@ echo .
 OLD_UMASK=`umask`
 umask 0027
 mkdir -p /opt/oracle
-mkdir -p /opt/oracle/oradata
-mkdir -p /opt/oracle/oradata/${ORACLE_SID}
 mkdir -p /opt/oracle/admin
 mkdir -p /opt/oracle/admin/${ORACLE_SID}/dpdump
 mkdir -p /opt/oracle/admin/${ORACLE_SID}/pfile
 mkdir -p /opt/oracle/admin/${ORACLE_SID}/scripts
 mkdir -p /opt/oracle/audit
 mkdir -p /opt/oracle/product/26ai/dbhome_1/dbs
+mkdir -p /opt/oracle/oradata
+mkdir -p /opt/oracle/oradata/${ORACLE_SID}
 umask ${OLD_UMASK}
 
 cp init${ORACLE_SID}.ora ${ORACLE_HOME}/dbs/
@@ -98,11 +89,9 @@ orapwd file=${ORACLE_HOME}/dbs/orapw${ORACLE_SID} \
 
 # now go do the SQL..
 
-sqlplus /nolog <<EOF
+sqlplus /nolog <<EOF | tee log_$ORACLE_SID.log
 
 conn / as sysdba 
-
-@accpwds
 
 set echo on
 
@@ -113,47 +102,29 @@ prompt Startup nomount done, now creating database...
 prompt still with the simples command possible
 prompt .
 
-create database $ORACLE_SID 
-  SET DEFAULT BIGFILE TABLESPACE
-    DATAFILE SIZE 1G  AUTOEXTEND ON  NEXT 201M  MAXSIZE UNLIMITED
-      EXTENT MANAGEMENT LOCAL
-  SYSAUX 
-    DATAFILE SIZE 1G  AUTOEXTEND ON  NEXT 201M  MAXSIZE UNLIMITED
-  SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
-    TEMPFILE SIZE 100M AUTOEXTEND ON NEXT  51M MAXSIZE UNLIMITED
-  SMALLFILE UNDO TABLESPACE "UNDOTBS1"
-    DATAFILE SIZE 400M AUTOEXTEND ON NEXT  101M  MAXSIZE UNLIMITED
-LOGFILE                   /* create groups of larger files */ 
-  GROUP 1  SIZE 400M
-, GROUP 2  SIZE 400M
-, GROUP 3  SIZE 400M
-enable pluggable database /* enable+seed+sizes+localundo .. all 1 spec */ 
-seed                      /* pre-emptively size these, undo dflt 100?  */
-    SYSTEM   DATAFILES SIZE 500M AUTOEXTEND ON NEXT 101M MAXSIZE UNLIMITED
-    SYSAUX   DATAFILES SIZE 500M autoextend on next 101M maxsize unlimited
-  /* undo tablespace   /* leads to ora-30023, but how to create local undo?  * /
-    UNDOTBS1 datrafile size 400M autoextend on next 101M maxsize unlimited
-  ***/
-LOCAL UNDO ON             /* this will create an undo_ts ? */
-;
+create database $ORACLE_SID ;
 
 prompt .
-prompt DB creation done, next showing pdbs and some info ... 
+prompt DB creation done, now showing pdbs and some info ... 
 prompt .
+
+@sec_cre first_message_since_creation
 
 show pdbs
 
-prompt .
-host read -t15 -p "Check create statement..." abc
-
 set echo off
+set verify off
 
--- @chk_crdb1
+@sec_cre second_message_since_creation
+
+@chk_crdb1
+
+@sec_cre third_message_since_creation
 
 @chk_early
 
--- exit to check
-exit
+@sec_cre fourth_message_since_creation
+
 
 connect / as sysdba
 
@@ -165,7 +136,11 @@ prompt .
 prompt next are components from 3_crdb
 prompt .
 
+@sec_cre fifth_message_since_creation
+
 @3_crdb_comp.sql
+
+@sec_cre sixth_message_since_creation
 
 EOF
 

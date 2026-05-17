@@ -78,3 +78,4 @@ group by o.owner# , u.name --, o.type#
 order by o.owner# --, o.type#
 ; 
 
+set echo off
