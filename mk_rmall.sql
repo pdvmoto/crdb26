@@ -1,8 +1,14 @@
 
 -- for CRDB only, too risky to use elsewhere..
 
-set heading off
-set feedb off
+set verify   off
+set echo     off
+set heading  off
+set feedb    off
+set linesize 192
+set doc      off
+
+set trimspool on
 
 -- first
 -- data, temp, redo, control
@@ -19,10 +25,9 @@ select 'rm ' || member from v$logfile ;
 
 select 'rm ' || name from v$controlfile ;
 
-
 -- files at destinations pointed by parameters, Risky!
 
-select 'rm ' || p.value || '/*.*'
+select 'rm ' || p.value || '/' || '*' || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) ) || '*.*'
 from v$parameter p
 where p.value is not null
   and length ( trim ( p.value ) ) != 0
@@ -39,7 +44,9 @@ order by p.name ;
 -- finally: the relevant stuff in OH  the files in $OH/dbs
 -- use host cmds to generat
 
-host echo rm $ORACLE_HOME/dbs/init$ORACLE_SID.ora
-host echo rm $ORACLE_HOME/dbs/spfile$ORACLE_SID.ora
-host echo rm $ORACLE_HOME/dbs/orapw$ORACLE_SID
+select '#' from dual ;
+
+select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/init'   || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) ) || '.ora' from dual 
+select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/spfile' || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) ) || '.ora' from dual 
+select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/orapw'  || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) )           from dual 
 
