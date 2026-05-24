@@ -34,13 +34,15 @@ db_name=$ORACLE_SID                     # need this to prevent ORA-01506
                                         # file-destinations, control where...
                                         # add log-dest and flra if needed
 db_create_file_dest  = /opt/oracle/oradata
-# control_files        = /opt/oracle/oradata/$ORACLE_SID/controlfile/control01.ctl
+
+                                        # explicit controlfile, for now
+control_files        = /opt/oracle/oradata/$ORACLE_SID/controlfile/control01.ctl
 
 diagnostic_dest      = $ORACLE_BASE     # this will create the diag if needed
 
 # audit_file_dest      = $ORACLE_BASE/audit # consider unified auditing.
 
-sga_target           = 1500M            # 1500M will fit insie FREE
+sga_target           = 1500M            # 1500M will fit inside FREE
 pga_aggregate_target = 512M
 
 undo_tablespace      = UNDOTBS1         # create-db uses this name
@@ -88,12 +90,20 @@ orapwd file=${ORACLE_HOME}/dbs/orapw${ORACLE_SID} \
   password=oracle   \
   force=y format=12
 
+# ######## save removed options #####
+# MAXINSTANCES      8
+# MAXLOGHISTORY     1
+# MAXLOGFILES      16
+# MAXLOGMEMBERS     3
+# MAXDATAFILES   1024
+
 # now go do the SQL..
 
 sqlplus /nolog <<EOF | tee log_${ORACLE_SID}.log
 
 conn / as sysdba 
 
+-- pick up defined passwords
 @accpwds
 
 set echo on
@@ -114,31 +124,31 @@ host read -t10 -p"Nomount. Control-C to cancel, Enter to continue..." abc
 set echo on
 
 CREATE DATABASE ${ORACLE_SID}
-MAXINSTANCES      8
-MAXLOGHISTORY     1
-MAXLOGFILES      16
-MAXLOGMEMBERS     3
-MAXDATAFILES   1024
-    DATAFILE SIZE 700M AUTOEXTEND ON NEXT  10240K MAXSIZE UNLIMITED
-EXTENT MANAGEMENT LOCAL
+EXTENT MANAGEMENT LOCAL   /* outcommenht to keep SYSTEM DICT, old plugins? */
+SET DEFAULT BIGFILE TABLESPACE    /*  set sizes based on finished database */
+    DATAFILE SIZE 1200M AUTOEXTEND ON NEXT   101M MAXSIZE UNLIMITED
   SYSAUX 
-    DATAFILE SIZE  550M AUTOEXTEND ON NEXT 10240K MAXSIZE UNLIMITED
-  SMALLFILE DEFAULT TEMPORARY TABLESPACE TEMP
-    TEMPFILE SIZE   20M AUTOEXTEND ON NEXT   640K MAXSIZE UNLIMITED
-  SMALLFILE              UNDO TABLESPACE "UNDOTBS1" 
-    DATAFILE SIZE  200M AUTOEXTEND ON NEXT  5120K MAXSIZE UNLIMITED
-CHARACTER SET          AL32UTF8
-NATIONAL CHARACTER SET AL16UTF16
-  SET DEFAULT BIGFILE TABLESPACE 
+    DATAFILE SIZE  500M AUTOEXTEND ON NEXT   101M MAXSIZE UNLIMITED
+  DEFAULT TEMPORARY TABLESPACE TEMP
+    TEMPFILE SIZE  200M AUTOEXTEND ON NEXT   101M MAXSIZE UNLIMITED
+  UNDO TABLESPACE UNDOTBS1 
+    DATAFILE SIZE  200M AUTOEXTEND ON NEXT   101M MAXSIZE UNLIMITED
+  DEFAULT TABLESPACE USERS
+    DATAFILE SIZE   50M AUTOEXTEND ON NEXT   101M MAXSIZE UNLIMITED
+          CHARACTER SET AL32UTF8   /* dflt was US7ASCII.. so better specify */
+ NATIONAL CHARACTER SET AL16UTF16  /* this was the dflt...                  */
 LOGFILE 
-  GROUP 1  SIZE 200M,
-  GROUP 2  SIZE 200M,
-  GROUP 3  SIZE 200M
-USER SYS    IDENTIFIED BY "&&sysPassword" 
+  GROUP 1  SIZE 500M,
+  GROUP 2  SIZE 500M,
+  GROUP 3  SIZE 500M
+USER SYS    IDENTIFIED BY "&&sysPassword"
 USER SYSTEM IDENTIFIED BY "&&systemPassword"
-                        /* notice no SEED-specification or sizing yet */
-                        /* just enable-pluggable and local undo       */
-enable pluggable database LOCAL UNDO ON;
+ENABLE PLUGGABLE DATABASE
+SEED                                                  /*  prevent resizes */
+    SYSTEM DATAFILEs SIZE 400M AUTOEXTEND ON NEXT 101M MAXSIZE UNLIMITED
+    SYSAUX DATAFILEs SIZE 400M AUTOEXTEND ON NEXT 101M maxsize unlimited
+    LOCAL UNDO ON
+;
 
 set echo off
 
@@ -172,4 +182,45 @@ echo Created Database $ORACLE_SID
 echo Elapsed $SECONDS
 echo .
 echo End of $0 
+
+# host read -t15 -p"DB Create done, control-C to stop..." abc
+
+# ## ## ## ## End of C005 ## ## ## ##  
+#
+# anyting below here is Work In Progres... 
+# 
+
+read -t30 -p"DB Create done, control-C to stop..." abc
+
+# reconnect
+sqlplus /nolog <<EOF
+
+connect / as sysdba
+
+-- include version of Catalog, catproc, etc..
+-- or use own variety of scripts
+
+@2_crdb_catalog
+
+prompt .
+-- prompt 2_crdb_catalog.sql: done. Catalog created
+prompt .
+prompt next are components from 3_crdb
+prompt .
+
+@sec_cre fifth_message_since_creation
+
+-- @3_crdb_comp.sql
+
+@sec_cre sixth_message_since_creation
+
+EOF
+
+echo .
+echo Database $ORACLE_SID created...
+echo .
+echo Suggest to check datafiles and dflt parameters 
+echo .
+read -t15 -p "Please Check" abc
+echo .
 
