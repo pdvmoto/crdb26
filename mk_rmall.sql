@@ -26,6 +26,7 @@ select 'rm ' || member from v$logfile ;
 select 'rm ' || name from v$controlfile ;
 
 -- files at destinations pointed by parameters, Risky!
+-- note: some files have lowercase-SID in their name: add to-lower ()
 
 select 'rm ' || p.value || '/' || '*' || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) ) || '*.*'
 from v$parameter p
@@ -46,7 +47,9 @@ order by p.name ;
 
 select '#' from dual ;
 
-select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/init'   || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) ) || '.ora' from dual 
-select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/spfile' || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) ) || '.ora' from dual 
-select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/orapw'  || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) )           from dual 
+select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/init'   || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) ) || '.ora' from dual ;
+select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/spfile' || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) ) || '.ora' from dual ;
+select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/hc_'    || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) ) || '.dat' from dual ;
 
+select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/lk'     || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) )           from dual ;
+select 'rm ' || sys_context ('userenv','ORACLE_HOME') || '/dbs/orapw'  || to_char ( sys_context ( 'USERENV', 'INSTANCE_NAME' ) )           from dual ;
