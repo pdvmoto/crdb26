@@ -36,9 +36,6 @@ set echo on
 -- notice how -l sends lofiles to /tmp
 -- notice how catctl does not have a -v
 
-DEFINE CATCTL="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catctl.pl -n 4 -l /tmp "
-DEFINE CATCON="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catcon.pl -n 1 -l /tmp -v "
-
 /**** 
 prompt .
 prompt try disabling MZ processes to go faster.
@@ -51,9 +48,14 @@ BEGIN
     window_name => NULL);
 END;
 /
-***/
 
 host read -t10 -p "disabled mz processes?" abc
+***/
+
+-- Define how to run catctl.pl and catcon.pl 
+
+DEFINE CATCTL="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catctl.pl -n 2 -l /tmp "
+DEFINE CATCON="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catcon.pl -n 2 -l /tmp -v "
 
 -- first: jserver
 -- why do all script re-connect ? 
@@ -61,13 +63,13 @@ host read -t10 -p "disabled mz processes?" abc
 connect "SYS"/"&&sysPassword" as SYSDBA
 set echo on
 
-host &&CATCON -b  initjvm  -c 'PDB$SEED CDB$ROOT'        $ORACLE_HOME/javavm/install/initjvm.sql;
+host &&CATCON -b  initjvm         $ORACLE_HOME/javavm/install/initjvm.sql;
 
-host &&CATCON -b  initxml  -c 'PDB$SEED CDB$ROOT'        $ORACLE_HOME/xdk/admin/initxml.sql;
+host &&CATCON -b  initxml         $ORACLE_HOME/xdk/admin/initxml.sql;
 
-host &&CATCON -b  xmlja    -c 'PDB$SEED CDB$ROOT'        $ORACLE_HOME/xdk/admin/xmlja.sql;
+host &&CATCON -b  xmlja           $ORACLE_HOME/xdk/admin/xmlja.sql;
 
-host &&CATCON -b  catjava  -c 'PDB$SEED CDB$ROOT'        $ORACLE_HOME/rdbms/admin/catjava.sql;
+host &&CATCON -b  catjava         $ORACLE_HOME/rdbms/admin/catjava.sql;
 
 -- next context
 -- why reconnect so often ? 
@@ -75,9 +77,9 @@ SET VERIFY OFF
 connect "SYS"/"&&sysPassword" as SYSDBA
 set echo on
 
-host &&CATCON -b catctx    -c 'PDB$SEED CDB$ROOT' -a 1   $ORACLE_HOME/ctx/admin/catctx.sql 1Xbkfsdcdf1ggh_123 1SYSAUX 1TEMP 1LOCK ;
-host &&CATCON -b dr0defin  -c 'PDB$SEED CDB$ROOT' -a 1   $ORACLE_HOME/ctx/admin/defaults/dr0defin.sql 1\"AMERICAN\";
-host &&CATCON -b dbmsxdbt  -c 'PDB$SEED CDB$ROOT'        $ORACLE_HOME/rdbms/admin/dbmsxdbt.sql;
+host &&CATCON -b catctx    -a 1   $ORACLE_HOME/ctx/admin/catctx.sql 1Xbkfsdcdf1ggh_123 1SYSAUX 1TEMP 1LOCK ;
+host &&CATCON -b dr0defin  -a 1   $ORACLE_HOME/ctx/admin/defaults/dr0defin.sql 1\"AMERICAN\";
+host &&CATCON -b dbmsxdbt         $ORACLE_HOME/rdbms/admin/dbmsxdbt.sql;
 
 -- cwmlite 
 
@@ -85,7 +87,7 @@ SET VERIFY OFF
 set echo on
 connect "SYS"/"&&sysPassword" as SYSDBA
 
-host &&CATCON -b  olap     -c 'PDB$SEED CDB$ROOT'  -a 1  $ORACLE_HOME/olap/admin/olap.sql 1SYSAUX 1TEMP;
+host &&CATCON -b  olap     -a 1  $ORACLE_HOME/olap/admin/olap.sql 1SYSAUX 1TEMP;
 
 -- next: spatial 
 
@@ -93,7 +95,8 @@ SET VERIFY OFF
 connect "SYS"/"&&sysPassword" as SYSDBA
 set echo on
 
-host &&CATCON -b mdinst  -c 'PDB$SEED CDB$ROOT'          $ORACLE_HOME/md/admin/mdinst.sql;
+host &&CATCON -b mdinst          $ORACLE_HOME/md/admin/mdinst.sql;
+
 spool off
 
 -- next  ClusterDBViews
@@ -102,9 +105,9 @@ SET VERIFY OFF
 connect "SYS"/"&&sysPassword" as SYSDBA
 set echo on
 
-host &&CATCON -b catclust                       $ORACLE_HOME/rdbms/admin/catclust.sql;
+host &&CATCON -b catclust         $ORACLE_HOME/rdbms/admin/catclust.sql;
 
-host &&CATCON -b catfinal                       $ORACLE_HOME/rdbms/admin/catfinal.sql;
+host &&CATCON -b catfinal         $ORACLE_HOME/rdbms/admin/catfinal.sql;
 
 -- next Lock Accounts, root + pdbseed
 
@@ -139,7 +142,7 @@ connect "SYS"/"&&sysPassword" as SYSDBA
 
 connect "SYS"/"&&sysPassword" as SYSDBA
 
-host &&CATCON -b utlrp                         $ORACLE_HOME/rdbms/admin/utlrp.sql;
+host &&CATCON -b utlrp            $ORACLE_HOME/rdbms/admin/utlrp.sql;
 
 select comp_id, status from dba_registry;
 

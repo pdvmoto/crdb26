@@ -40,8 +40,8 @@ ALTER DATABASE DEFAULT TABLESPACE "USERS";
 -- notice how -l sends lofiles to /tmp
 -- notice how catctl does not have a -v
 
-DEFINE CATCTL="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catctl.pl -n 4 -l /tmp "
-DEFINE CATCON="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catcon.pl -n 4 -l /tmp -v "
+DEFINE CATCTL="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catctl.pl -n 2 -l /tmp "
+DEFINE CATCON="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catcon.pl -n 2 -l /tmp -v "
 
 prompt .
 prompt catctl and catcon ...
@@ -62,8 +62,10 @@ alter pluggable database pdb$seed open;
 -- can probably be simplified, but nothing in this command is too system-specific
 host &&CATCTL -u "SYS"/"&&sysPassword" -icatpcat -c 'CDB$ROOT PDB$SEED' -a  -d $ORACLE_HOME/rdbms/admin  rdbms/admin/catpcat.sql;
 
+-- catcon: defaults to CDB + All PDBs, so leave out -c
 -- catcon: the dflts for -U and -u are "/ as internal, 
 -- hence only specify -u if system
+
 host &&CATCON -b owminst                                 $ORACLE_HOME/rdbms/admin/owminst.plb;
 
 host &&CATCON -b pupbld   -u  SYSTEM/&&systemPassword    $ORACLE_HOME/sqlplus/admin/pupbld.sql;
