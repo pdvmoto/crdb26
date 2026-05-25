@@ -14,16 +14,21 @@ spool log_2_crdb_catalog.log append
 
 
 -- from CreatDBFiles.sql: add a dflt-USER tablespace to CDB -- 
+-- but in the latest SID.sh, I have the USERS tablespace included in the initial create.
+-- so skip the create.
 
 SET VERIFY OFF
 
 connect "SYS"/"&&sysPassword" as SYSDBA
 
-set echo on
+set echo off
+set doc off
 
+/* *** 
 CREATE BIGFILE TABLESPACE "USERS" LOGGING  
 	DATAFILE  SIZE 20M AUTOEXTEND ON NEXT  10M MAXSIZE UNLIMITED  
 	EXTENT MANAGEMENT LOCAL  SEGMENT SPACE MANAGEMENT  AUTO;
+ * ***/
 
 ALTER DATABASE DEFAULT TABLESPACE "USERS";
 
@@ -31,7 +36,7 @@ ALTER DATABASE DEFAULT TABLESPACE "USERS";
 --   catctl + catcon, doing catpcat, owminst, pubbld, pubdel, helpbld: 
 
 
--- start with some Defines to shorten the commands, define RCTL and RCON
+-- start with some Defines to shorten the commands, define CATCTL and CATCON
 -- notice how -l sends lofiles to /tmp
 -- notice how catctl does not have a -v
 
@@ -40,34 +45,40 @@ DEFINE CATCON="$ORACLE_HOME/perl/bin/perl $ORACLE_HOME/rdbms/admin/catcon.pl -n 
 
 prompt .
 prompt catctl and catcon ...
+prompt .
 prompt &&CATCTL
 prompt &&CATCON
 prompt .
 
 host read -t 15 -p " check catctl catcon " abc 
 
--- these prep-stmnts were in generated script:
+-- these alter-stmnts were in generated script, hence I coped them in, not sure if useful:
 alter session set "_oracle_script"=true;
 alter pluggable database pdb$seed close;
 alter pluggable database pdb$seed open;
 
 -- in the generatd script, the last file didnt have $OH in front of it ?
-host &&CATCTL -u "SYS"/"&&sysPassword" -icatpcat -c 'CDB$ROOT PDB$SEED' -a  -d $ORACLE_HOME/rdbms/admin rdbms/admin/catpcat.sql;
+-- so I left it out here as well.
+-- can probably be simplified, but nothing in this command is too system-specific
+host &&CATCTL -u "SYS"/"&&sysPassword" -icatpcat -c 'CDB$ROOT PDB$SEED' -a  -d $ORACLE_HOME/rdbms/admin  rdbms/admin/catpcat.sql;
 
+-- catcon: the dflts for -U and -u are "/ as internal, 
+-- hence only specify -u if system
+host &&CATCON -b owminst                                 $ORACLE_HOME/rdbms/admin/owminst.plb;
 
-host &&CATCON -b owminst  -U  "SYS"/"&&sysPassword"  $ORACLE_HOME/rdbms/admin/owminst.plb;
+host &&CATCON -b pupbld   -u  SYSTEM/&&systemPassword    $ORACLE_HOME/sqlplus/admin/pupbld.sql;
 
-host &&CATCON -b pupbld   -u  SYSTEM/&&systemPassword   -U  "SYS"/"&&sysPassword"  $ORACLE_HOME/sqlplus/admin/pupbld.sql;
-
-host &&CATCON -b pupdel   -u  SYS/&&sysPassword         -U  "SYS"/"&&sysPassword"  $ORACLE_HOME/sqlplus/admin/pupdel.sql;
+-- that one trigger...
+host &&CATCON -b pupdel                                  $ORACLE_HOME/sqlplus/admin/pupdel.sql;
 
 -- the generated script did a reconnect..
 
 connect "SYS"/"&&sysPassword" as SYSDBA
 
-set echo on
+-- note: the -a option is vague, Martin Berger (berx) dug in 
+-- and found it is probably windows or GUI related
 
-host &&CATCON -b hlpbld   -u  SYS/&&sysPassword         -U  "SYS"/"&&sysPassword"  -a 1   $ORACLE_HOME/sqlplus/admin/help/hlpbld.sql;
+host &&CATCON -b hlpbld                           -a 1   $ORACLE_HOME/sqlplus/admin/help/hlpbld.sql;
 
 prompt .
 prompt  end of components from Files and Catalog, 

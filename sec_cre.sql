@@ -1,5 +1,5 @@
 
--- log seconds since "create datbase" 
+-- log seconds since "create datbase" to stdout.
 -- useful during create-scripts, purely curiosity and speed measurement
 
 -- trick for default
