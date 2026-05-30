@@ -142,6 +142,9 @@ connect "SYS"/"&&sysPassword" as SYSDBA
 
 connect "SYS"/"&&sysPassword" as SYSDBA
 
+-- added curiosity check, invalid obj
+@invldobj 
+
 host &&CATCON -b utlrp            $ORACLE_HOME/rdbms/admin/utlrp.sql;
 
 select comp_id, status from dba_registry;
@@ -152,7 +155,7 @@ connect "SYS"/"&&sysPassword" as SYSDBA
 
 startup ;
 
--- why this ? 
+-- copied from postDBCreation.sql, but why is this ? 
 select instance from v$thread where instance like 'UNNAMED_INSTANCE%';
 
 prompt .

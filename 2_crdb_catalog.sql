@@ -24,12 +24,8 @@ connect "SYS"/"&&sysPassword" as SYSDBA
 set echo off
 set doc off
 
-/* *** 
-CREATE BIGFILE TABLESPACE "USERS" LOGGING  
-	DATAFILE  SIZE 20M AUTOEXTEND ON NEXT  10M MAXSIZE UNLIMITED  
-	EXTENT MANAGEMENT LOCAL  SEGMENT SPACE MANAGEMENT  AUTO;
- * ***/
-
+-- tablespace is now created at db-create time. 
+-- even the alter seems un-necessary.
 ALTER DATABASE DEFAULT TABLESPACE "USERS";
 
 -- from CreateDBCatalog: some scripts: -- 
@@ -50,6 +46,7 @@ prompt &&CATCTL
 prompt &&CATCON
 prompt .
 
+-- host-read only works form called sql-script, not from heredoc.
 host read -t 15 -p " check catctl catcon " abc 
 
 -- these alter-stmnts were in generated script, hence I coped them in, not sure if useful:
@@ -63,8 +60,7 @@ alter pluggable database pdb$seed open;
 host &&CATCTL -u "SYS"/"&&sysPassword" -icatpcat -c 'CDB$ROOT PDB$SEED' -a  -d $ORACLE_HOME/rdbms/admin  rdbms/admin/catpcat.sql;
 
 -- catcon: defaults to CDB + All PDBs, so leave out -c
--- catcon: the dflts for -U and -u are "/ as internal, 
--- hence only specify -u if system
+-- catcon: the dflts for -U and -u are "/ as internal" hence only specify -u if not sys
 
 host &&CATCON -b owminst                                 $ORACLE_HOME/rdbms/admin/owminst.plb;
 
@@ -77,8 +73,8 @@ host &&CATCON -b pupdel                                  $ORACLE_HOME/sqlplus/ad
 
 connect "SYS"/"&&sysPassword" as SYSDBA
 
--- note: the -a option is vague, Martin Berger (berx) dug in 
--- and found it is probably windows or GUI related
+-- note: the -a option is vague, I dutyfully copied it from generated script.
+-- Martin Berger (berx) dug in  and found it is probably windows or GUI related
 
 host &&CATCON -b hlpbld                           -a 1   $ORACLE_HOME/sqlplus/admin/help/hlpbld.sql;
 

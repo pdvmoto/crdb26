@@ -17,6 +17,9 @@ rm -v $ORACLE_HOME/dbs/lk$ORACLE_SID*
 # more radical removal..
 # rm -v $ORACLE_HOME/dbs/*${ORACLE_SID}*
 
+rm -v $ORACLE_HOME/rdbms/log/*${ORACLE_SID}*
+rm -v $ORACLE_HOME/rdbms/log/*${ORACLE_SID_LOWER}*
+
 rm -v $ORACLE_BASE/admin/$ORACLE_SID/xdb_wallet/*.*
 rm -v $ORACLE_BASE/admin/$ORACLE_SID/adump/*.*
 rm -v $ORACLE_BASE/admin/$ORACLE_SID/bdump/*.*
