@@ -1,13 +1,15 @@
 --
 -- 4_crdb : create one pdb (always try >1 to have multi-test)
 --
+-- new PDB is Arg1 (ampersand-1 in sqlplus)
+-- Concatenated plug_PDB and post_PDBCreation, 
+-- Note tht I left most of the seemingly useless selects and re-connects in the script.
+-- 
 -- todo/questions
 --      check name of pluggable as &1, set dflt to ORCL
 --      consider using 42_reopenpdb Arg1
--- 	inspect postPDB creation.. why all the work: (and include it here..)
+-- 	re-inspect postPDB creation.. why all the work: (and include it here..)
 --
--- stmnts copied in from :
---      plug_p1
 --
 
 -- implement dflt ORCL here..
@@ -34,10 +36,11 @@ connect "SYS"/"&&sysPassword" as SYSDBA
 set echo on
 
 CREATE PLUGGABLE DATABASE &&PDB_NAME
-  ADMIN USER PDBADMIN IDENTIFIED BY "&&pdbadminPassword" ROLES=(CONNECT)
-   PARALLEL  file_name_convert=NONE  STORAGE INHERIT;
+  ADMIN USER PDBADMIN IDENTIFIED BY "&&pdbadminPassword" ;
 
+-- I kept the select..
 select name from v$containers where upper(name) = '&&PDB_NAME';
+
 alter pluggable database &&PDB_NAME open;
 alter system register;
 
@@ -51,7 +54,7 @@ CREATE SMALLFILE TEMPORARY TABLESPACE TEMP_NON_ENC
   TEMPFILE SIZE 20M AUTOEXTEND ON NEXT  10M MAXSIZE UNLIMITED;
 ALTER DATABASE DEFAULT TEMPORARY TABLESPACE "TEMP_NON_ENC";
 
--- repeatable section: goto root, close pdb, repoen pdb, register.
+-- repeatable section: goto root, close pdb, re open pdb, register.
 
 alter session set container=cdb$root;
 ALTER PLUGGABLE DATABASE &&PDB_NAME CLOSE IMMEDIATE;
@@ -97,6 +100,11 @@ prompt .
 prompt .
 host read -t15 -p "default USERS tablespace and opatch done...." abc 
 
+-- 
+-- from here on, the script does ... Nothing anymore. 
+-- Just Connects and Selects ?? 
+-- I've kept them from the DBCA generated script, as they dont seem to hurt anything.
+--
 connect "SYS"/"&&sysPassword" as SYSDBA
 
 select property_value from database_properties where property_name='LOCAL_UNDO_ENABLED';
@@ -129,6 +137,7 @@ and upper(b.name)=upper('&&PDB_NAME');
 
 show con_name;
 
+-- the generated script contained these two... ???
 alter session set container="CDB$ROOT";
 alter session set container=CDB$ROOT;
 
