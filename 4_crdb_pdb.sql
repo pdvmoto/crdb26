@@ -80,6 +80,9 @@ drop tablespace TEMP_NON_ENC including contents and datafiles;
 
 -- verify by selecting temp-tablespaces and files ?
 
+-- keep the state, e.g. dflt the new PDB as OPEN
+alter pluggable database &&PDB_NAME save state ;
+
 prompt .
 prompt now include the stmnts from postPDBCreation...  
 prompt notice a lot of double stmts in there  
