@@ -2,17 +2,29 @@
 #
 # SID.sh - create minimalistic database, testing purposes for now
 # 
-# latest version: C007.sh: including 2 pdbs
+# latest version: C008.sh: including 2 pdbs and a re-thought init.ora
+#
+# Other files needed:
+#   2_crdb_catalog.sql
+#   3_crdb_comp.sql
+#   4_crdb_pdb.sql
+#   lock_accounts.sql
+#
+# And some utilities:
+#   sec_cre.sql
+#   chk_crdb1.sql
+#   chk_early.sql
+#   ctlfiles_to_init.sql
+#   
 #
 # Note: the new ORACLE_SID is the name of this script. 
 # we set that name as $ORACLE_SID and carry it wherever it is needed.
 #
 # todo:
 #  - lots of ideas, lot of things to try. see blogs, notes.
-#  - replace undotbs1 with dflt sys_undots ?
-#  - to have "set echo on" work : create <<EOF> tmpfile.sql with commands..
-#	This would make for better log- and traceablility.. 
-# 
+#  - to have "set echo on" work : cat <<EOF> 1_crdb.sql 
+#	   This would make for better log- and traceablility.. 
+#
 
 # allow interrupt, notably on read -t15
 trap 'echo; echo "Interrupted while processing $0 "; exit 130' INT
@@ -40,13 +52,13 @@ echo .
 echo "Create time= " $CREATED_DT
 echo .
 echo .
-read -p "Control-C to cancel, if correct hit enter..." -t10 abc
+read -p "Check, and use Control-C to cancel, if correct hit enter..." -t10 abc
 echo .
 
 
 ########## INIT dot ORA ###########
 #
-# generate a new init.ora from env_variables, absolute minimum
+# generate a new, minimalistid, init.ora
 # initially I only needed the db_name
 # later I added some of the parameters from DBCA 
 # and some from myself
@@ -196,8 +208,9 @@ SEED                                                    /*  prevent resizes */
 
 show pdbs 
 
--- test resizing undo for seed (beware of $-vars in HereDoc)
+-- test resizing undo for seed 
 -- I know I probably shouldnt, but space-management is an obsession
+-- (and beware of $-vars in HereDoc)
 
 -- first the resize undo of the CDB, if needed
 -- alter tablespace SYS_UNDOTS resize 500M ; 
@@ -252,8 +265,8 @@ echo .
 
 read -t15 -p"DB Create done, control-C to stop..." abc
 
-# for now
-exit
+# for testing.
+# exit
 
 # reconnect
 sqlplus /nolog <<EOF | tee -a log_${ORACLE_SID}.log
@@ -278,7 +291,7 @@ prompt .
 
 host sleep 10 
 
-@3_crdb_comp.sql
+@3_crdb_comp
 
 set echo off
 set feedb off
