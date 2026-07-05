@@ -22,14 +22,23 @@ column guid       format A33
 column omode      format A11
 column restricted format A10
 
-set linesize 150
+set linesize 170
+
+-- no spool, bcse this script called from others already spooling
 
 select con_id, dbid, name, log_mode, open_mode from v$database ;
 
-select con_id, name pdb_name, open_mode omode, restricted, dbid , guid
+select  con_id
+      , name        pdb_name
+      , open_mode   omode
+      , restricted
+      , dbid 
+      , guid
 from v$pdbs ;
 
-select ts.con_id, ts.name ts_name, ts.bigfile  
+select  ts.con_id
+      , ts.name ts_name
+      , ts.bigfile  
 from v$tablespace ts
 order by ts.con_id , ts.ts# ;
 
@@ -43,10 +52,10 @@ host read -t15 -p "check the info above, next: the files.." abc
 
 select con_id, name ctl_file from v$controlfile  ; 
 
-select l.con_id
-, l.group#        grp
-,	l.bytes/(1024*1024)	     mb_size
-, lf.member			  log_file
+select  l.con_id
+      , l.group#                 grp
+      ,	l.bytes/(1024*1024)	     mb_size
+      , lf.member			  log_file
 from v$logfile lf, v$log l
 where l.con_id = lf.con_id
   and l.group# = lf.group#

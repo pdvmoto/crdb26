@@ -44,12 +44,12 @@ prompt name the PDBs and tablespaces.
 prompt Beware: this excludes the CDB
 prompt .
 
-select df.con_id con_id
-, p.name     as pdb_name
-, ts.ts#     as tsnr
-, ts.name    as tsname
-,  round ( sum ( bytes /( 1024 * 1024) ) ) mb_total
---, df.*
+select  df.con_id  as con_id
+      , p.name     as pdb_name
+      , ts.ts#     as tsnr
+      , ts.name    as tsname
+      , round ( sum ( bytes /( 1024 * 1024) ) ) mb_total
+      --, df.*
 from v$datafile   df
    , v$tablespace ts
    , v$containers p
