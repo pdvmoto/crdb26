@@ -24,3 +24,183 @@ seed                      /* pre-emptively size these, undo dflt 100?       */
 LOCAL UNDO ON             /* this will create an undo_ts ?                  */
 ;
 
+
+-- -- notes on creating 1 single script.. put snippets here..
+
+main functions
+
+f_initialise 
+
+f_create_directories
+
+f_generate_utilities_sql : sec_cre, chk_early, ctlfiles_to_init... ?
+
+f_create_init_ora
+
+f_generate_1_create_sql
+
+f_generate_2_catalog_sql
+
+f_generate_3_comp_sql
+
+f_generate_lock_accounts_sql
+
+f_generate_4_pdb_sql
+
+
+# include pause or exit to inspect files
+
+calls to execute, in order;
+
+f_initialize..
+install_init_ora
+
+create_password_file
+
+run_1_create_sql
+
+run_2_catalog_sql
+
+run_3_comp_sql
+
+run_4_pdb_sql
+
+
+-- -- first attempt -- -
+
+##############################################################################
+# Generate scs_since_cre.sql
+##############################################################################
+mk_scs_since_cre()
+{
+    echo
+    echo "Generating scs_since_cre.sql ..."
+
+    cat > scs_since_cre.sql <<'EOF'
+--
+-- log seconds since "create database" to stdout.
+-- useful during create-scripts, purely curiosity and speed measurement
+--
+
+-- trick for default
+col themsg new_value 1
+select null themsg from dual where 1=2;
+
+column sec_cre format 999,999,999
+column message format A50
+
+select ( sysdate - created ) * 24 * 3600 as sec_cre,
+       'sec_cre_msg=' || nvl('&1','dflt msg') as message
+from   v$database
+/
+EOF
+}
+
+##############################################################################
+# Generate chk_crdb1.sql
+##############################################################################
+mk_chk_crdb1()
+{
+    echo
+    echo "Generating chk_crdb1.sql ..."
+
+    cat > chk_crdb1.sql <<'EOF'
+rem
+rem checks after first crdb
+rem
+
+column con_id     format 9999
+column mb_size    format 999999
+column ts_name    format A20
+
+column ctl_file   format A90
+column log_file   format A90
+column df_name    format A90
+column tmp_file   format A90
+
+column grp        format 999
+
+column db_name    format A15
+column pdb_name   format A15
+column owner_name format A20
+
+column dbid       format 999999999999
+column guid       format A33
+column omode      format A11
+column restricted format A10
+
+set linesize 170
+
+-- no spool, bcse this script called from others already spooling
+
+select con_id, dbid, name, log_mode, open_mode
+from v$database;
+
+select  con_id
+      , name        pdb_name
+      , open_mode   omode
+      , restricted
+      , dbid
+      , guid
+from v$pdbs;
+
+select  ts.con_id
+      , ts.name ts_name
+      , ts.bigfile
+from v$tablespace ts
+order by ts.con_id, ts.ts#;
+
+prompt .
+prompt So far, the container (CDB) and the PDBs and tablespaces.
+prompt
+prompt Next: the files...
+prompt .
+
+host read -t15 -p "check the info above, next: the files.." abc
+
+select con_id, name ctl_file
+from v$controlfile;
+
+select  l.con_id
+      , l.group# grp
+      , l.bytes/(1024*1024) mb_size
+      , lf.member log_file
+from v$logfile lf
+   , v$log l
+where l.con_id = lf.con_id
+  and l.group# = lf.group#
+order by l.group#;
+
+select df.con_id
+     , bytes/(1024*1024) mb_size
+     , df.name df_name
+from v$datafile df
+order by df.con_id;
+
+set feedback on
+
+select df.con_id
+     , bytes/(1024*1024) mb_size
+     , df.name df_name
+from v$tempfile df
+order by df.con_id;
+
+prompt .
+prompt ...and the bonus-query: check how much is already there..
+prompt .
+
+set echo on
+
+select o.owner# owner
+     , u.name owner_name
+     , count(*) cnt
+from sys.obj$ o
+   , sys.user$ u
+where user# = owner#
+group by o.owner#, u.name
+order by o.owner#;
+
+set echo off
+EOF
+}
+

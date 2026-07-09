@@ -12,11 +12,16 @@
 #   lock_accounts.sql
 #
 # And some utilities:
-#   sec_cre.sql
-#   chk_crdb1.sql
-#   chk_early.sql
-#   ctlfiles_to_init.sql
-#   
+#   sec_cre.sql : measure time since db-creation
+#   chk_crdb1.sql : some checks
+#   chk_early.sql : similar checks
+#   ctlfiles_to_init.sql : can be used to add to pfile
+#
+# Concept is 
+# 1) to generate the script (with non hardcoded SID in them): mk_file()
+# 2) ask user to execute or just keep/view the scripts
+# 3) if no read-input given: just execute and create the db: do_file()
+# 4) spooled output to log_SID.log or to individual files ?
 #
 # Note: the new ORACLE_SID is the name of this script. 
 # we set that name as $ORACLE_SID and carry it wherever it is needed.
