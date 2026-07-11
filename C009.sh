@@ -2,14 +2,29 @@
 #
 # SID.sh - create minimalistic database, testing purposes for now
 # 
-# latest version: C009.sh: take sql-files into SID.sh, create them on the fly
+# latest version: C009.sh: Single File to do it all..
+#   Take sql-files and init.ora into SID.sh, then create them on the fly if needed.
 #
-# Other files needed, now generated:
+# The Conecpt:
+#   - run this one file to create a database.
+#   - the (hardcoded) SID in 1 place, the SID is FILE part of this FILE.sh 
+#   - Other files: init, crdb1/2/3/4, and utilities will be Created if Needed.
+#   - you can [optionally] inspect the created files before they run
+#   - provide bespoke files (edited files), they wont be over-written.
+#   - ask and allow interrupt before execution of script.
+#
+# the file that will be created (if not exist) are:
+#   initSID.ora : and move it to dbs
+#   accpwds.sql : the defines for passwords, you dont have to type..
 #   1_crdb_create.sql
 #   2_crdb_catalog.sql
 #   3_crdb_comp.sql
 #   4_crdb_pdb.sql
 #   lock_accounts.sql
+#   sec_cre.sql 
+#   chk_crdb1.sql : first check after create, includes the "early" check
+#   chk_postcre.sql : list some items at the end.. 
+#   [todo] ctlfiles_to_init.sql: not needed, create spfile earlier.
 #
 # And some utilities:
 #   sec_cre.sql : measure time since db-creation
@@ -29,9 +44,14 @@
 # todo:
 #  - lots of ideas, lot of things to try. see blogs, notes.
 #  - include an option to stop+review. 
+#  - allow bespoke-code: do not generate any script if already exist
 #  - including a master-sql to run the generated scripts: SID.do ? 
-#  - generate 2_crdb, 3_crdb and 4_crdb on the fly, from 1 single SID.sh ? 
-#  - to have "set echo on" work : cat <<EOF> 1_crdb.sql 
+#  - some files are quoted-EOF, others are expanded-EOF (with SID)
+#  - the creation of directories is stil messy, improve if possible
+#  - [useful?] include a "rm_SID" script to shutdown + cleanup ? 
+#  - allow for a Env-var to contain additional PDBs (space-separated?)
+#  - time the various stages: mk_files, execute..  and report duration
+#  - note: to have "set echo on" work : cat <<EOF> 1_crdb.sql 
 #	   This would make for better log- and traceablility.. 
 #
 
@@ -77,12 +97,17 @@ echo .
 # later I added some of the parameters from DBCA 
 # and some from myself
 #
-# You can and should Experiment here.
+# note: mk_init uses a convential EOF so the ENV-vars can expand
+#   other functions may use a quoted-EOF to include Dollar-signs.
+#
+# noteL: You can and should Experiment here.
 
 f_mk_init_ora()
 {
 
-echo "Generating init${ORACLE_SID}.ora ..."
+# inlcude a check-exist, dont overwrite existing file
+
+echo $0 : "Generating init${ORACLE_SID}.ora ..."
 
 cat <<EOF > init${ORACLE_SID}.ora
 #
@@ -129,16 +154,24 @@ EOF
 #########################################################################
 # Generate script 1_crdb_create.sql
 #
-# notice escapes for pdb$seed : PDB\$SEED, can this be done more elegant
+# note conventional here-doc with EOF, 
+#   need to escape for : PDB\$SEED 
 #
-# Big Advantages: 
-# 1) set echo works, shows what is happening, and into log-file
-# 2) only download + transport 1 script
-# 3) keep the n_crdb files for reference or editing ..
-# 4) ..
+#
+# Big Advantages of generating the file: 
+# 1) everything is in ONE FILE 
+# 2) set echo works, shows what is happening, and into log-file
+# .) ..
+# 
+# ######## leftovers: save a copy of the  removed options #####
+# MAXINSTANCES      8
+# MAXLOGHISTORY     1
+# MAXLOGFILES      16
+# MAXLOGMEMBERS     3
+# MAXDATAFILES   1024
 #
 #########################################################################
-f_mk_1_create_sql()
+f_mk_1_crdb_create()
 {
 
 echo $0 : "Generating 1_crdb_create.sql ..."
@@ -227,7 +260,7 @@ echo $0 : created the script 1_crdb_create.sql
 # Generate script 2_
 #
 #########################################################################
-f_mk_2_catalog_sql()
+f_mk_2_crdb_catalog_OLD()
 {
 
 echo $0 : "Generating 2_crdb_catalog.sql ..."
@@ -332,7 +365,7 @@ echo $0 : created the script 2_crdb_catalog.sql
 ################ end of f_mk_2_crdb_catalog #######################################
 
 
-f_mk_3_comp_sql () 
+f_mk_3_crdb_comp_OLD () 
 {
 
 echo $0 : "Generating 3_crdb_comp.sql ..."
@@ -363,6 +396,7 @@ spool log_3_crdb_catalog.log append
 
 host echo Start of 3_crdb_comp at \`date\`
 
+-- pick up defined passwords
 @accpwds
 
 -- JServeer...
@@ -446,6 +480,13 @@ echo $0 : created the script 3_crdb_comp.sql
 
 ################ end of f_mk_3_crdb_comp #######################################
 
+#
+# inlcude new code funcitons here
+#
+
+
+################ mkdirs #######################################
+#
 # mkdirs..
 # creating paths, code from generated script
 # note: consider using $ORACLE_BASE, $ORACLE_HOME, $ORACLE_DATA, $ORACLE_FLRA
@@ -478,10 +519,17 @@ orapwd file=${ORACLE_HOME}/dbs/orapw${ORACLE_SID} \
 # MAXDATAFILES   1024
 
 
+
+
 # 
 # generate init and copy it to location
+# optionally: do no generate, if file(s) already exist
 #
 f_mk_init_ora
+
+# the pwdfile, Always overwritten.
+#
+f_mk_pwdfile
 
 # out-comment the cp to allow to keep existing file
 cp init${ORACLE_SID}.ora ${ORACLE_HOME}/dbs/
@@ -489,9 +537,14 @@ cp init${ORACLE_SID}.ora ${ORACLE_HOME}/dbs/
 #
 # generate create-stmnts and catalog
 #
-f_mk_1_create_sql
-f_mk_2_catalog_sql
-f_mk_3_comp_sql
+f_mk_1_crdb_create
+f_mk_2_crdb_catalog
+f_mk_3_crdb_comp
+f_mk_4_crdb_pdbs
+
+# 
+# now list and ask for confirmation
+#
 
 # testing
 exit
