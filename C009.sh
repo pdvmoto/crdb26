@@ -69,6 +69,7 @@ echo .
 
 ##############################################################################
 # Generate INIT dot ORA ###########
+# using EOF and not 'EOF' so I can use env-vars to include info
 ##############################################################################
 #
 # generate a new, minimalistid, init.ora

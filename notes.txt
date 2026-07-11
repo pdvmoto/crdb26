@@ -200,7 +200,248 @@ where user# = owner#
 group by o.owner#, u.name
 order by o.owner#;
 
+prompt  also include chk_early.sql
+
 set echo off
+EOF
+}
+
+##############################################################################
+# Generate lock_accounts.sql
+##############################################################################
+mk_lock_accounts()
+{
+    echo
+    echo "Generating lock_accounts.sql ..."
+
+    cat > lock_accounts.sql <<'EOF'
+--
+-- original from lockAccounts, extracted into separate file,
+-- statement was identical in both locations, hence extracted
+-- called for CDB$ROOT and PDB$SEED
+--
+
+BEGIN
+  FOR item IN (
+      SELECT username,
+             authentication_type
+      FROM   dba_users
+      WHERE  account_status IN ('OPEN', 'LOCKED', 'EXPIRED')
+      AND    username NOT IN (
+                 'SYS',
+                 'SYSTEM',
+                 'SYSRAC',
+                 'XS$NULL'
+             )
+  )
+  LOOP
+    IF item.authentication_type = 'PASSWORD' THEN
+      dbms_output.put_line('Locking and Expiring: ' || item.username);
+
+      EXECUTE IMMEDIATE
+          'alter user '
+       || sys.dbms_assert.enquote_name(
+             sys.dbms_assert.schema_name(item.username), FALSE)
+       || ' password expire account lock';
+
+    ELSE
+      dbms_output.put_line('Locking: ' || item.username);
+
+      EXECUTE IMMEDIATE
+          'alter user '
+       || sys.dbms_assert.enquote_name(
+             sys.dbms_assert.schema_name(item.username), FALSE)
+       || ' account lock';
+    END IF;
+  END LOOP;
+END;
+/
+EOF
+}
+
+
+##############################################################################
+# Generate 4_crdb_pdb.sql
+##############################################################################
+mk_4_crdb_pdb()
+{
+    echo
+    echo "Generating 4_crdb_pdb.sql ..."
+
+    cat > 4_crdb_pdb.sql <<'EOF'
+--
+-- 4_crdb : create one pdb (always try >1 to have multi-test)
+--
+-- new PDB is Arg1 (ampersand-1 in sqlplus)
+-- Concatenated plug_PDB and post_PDBCreation,
+-- Note that I left most of the seemingly useless selects and re-connects
+-- in the script.
+--
+
+-- implement dflt ORCL here..
+column 1 new_value 1 noprint
+select '&1' "1" from dual;
+define PDB_NAME=&1 "ORCL"
+
+spool log_4_crdb_&&PDB_NAME..log append
+
+host echo .
+host echo Start of 4_crdb_&&PDB_NAME at `date`
+host echo .
+host read -t15 -p "About to create PDB &&PDB_NAME " abc
+
+@accpwds
+
+set verify off
+
+connect "SYS"/"&&sysPassword" as SYSDBA
+
+set echo on
+
+CREATE PLUGGABLE DATABASE &&PDB_NAME
+  ADMIN USER PDBADMIN IDENTIFIED BY "&&pdbadminPassword";
+
+-- I kept the select..
+select name
+from v$containers
+where upper(name) = '&&PDB_NAME';
+
+alter pluggable database &&PDB_NAME open;
+alter system register;
+
+-- go into container and create temp_non_enc
+
+alter session set container=&&PDB_NAME;
+
+select con_id
+from v$pdbs
+where con_id > 1
+  and upper(name)=upper('&&PDB_NAME');
+
+select bigfile
+from sys.cdb_tablespaces
+where tablespace_name='TEMP'
+  and con_id=0;
+
+CREATE SMALLFILE TEMPORARY TABLESPACE TEMP_NON_ENC
+  TEMPFILE SIZE 20M AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;
+
+ALTER DATABASE DEFAULT TEMPORARY TABLESPACE TEMP_NON_ENC;
+
+-- repeatable section: goto root, close pdb, reopen pdb, register
+
+alter session set container=CDB$ROOT;
+alter pluggable database &&PDB_NAME close immediate;
+alter pluggable database &&PDB_NAME open;
+alter system register;
+
+-- drop and recreate temp
+
+alter session set container=&&PDB_NAME;
+
+drop tablespace TEMP including contents and datafiles;
+
+CREATE SMALLFILE TEMPORARY TABLESPACE TEMP
+  TEMPFILE SIZE 20M AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;
+
+ALTER DATABASE DEFAULT TEMPORARY TABLESPACE TEMP;
+
+-- reopen...
+
+alter session set container=CDB$ROOT;
+alter pluggable database &&PDB_NAME close immediate;
+alter pluggable database &&PDB_NAME open;
+alter system register;
+
+alter session set container=&&PDB_NAME;
+
+drop tablespace TEMP_NON_ENC including contents and datafiles;
+
+-- keep the state, e.g. default the new PDB as OPEN
+
+alter pluggable database &&PDB_NAME save state;
+
+prompt .
+prompt now include the stmnts from postPDBCreation...
+prompt notice a lot of double stmts in there
+prompt .
+
+connect "SYS"/"&&sysPassword" as SYSDBA
+
+alter session set container=&&PDB_NAME;
+
+set echo on
+
+CREATE BIGFILE TABLESPACE USERS
+  LOGGING
+  DATAFILE SIZE 7M
+  AUTOEXTEND ON NEXT 1280K MAXSIZE UNLIMITED
+  EXTENT MANAGEMENT LOCAL
+  SEGMENT SPACE MANAGEMENT AUTO;
+
+ALTER DATABASE DEFAULT TABLESPACE USERS;
+
+host $ORACLE_HOME/OPatch/datapatch -skip_upgrade_check -db $ORACLE_SID -pdbs &&PDB_NAME;
+
+prompt .
+prompt .
+host read -t15 -p "default USERS tablespace and opatch done...." abc
+
+--
+-- From here on the script does little more than reconnect and verify.
+--
+
+connect "SYS"/"&&sysPassword" as SYSDBA
+
+select property_value
+from database_properties
+where property_name='LOCAL_UNDO_ENABLED';
+
+connect "SYS"/"&&sysPassword" as SYSDBA
+
+alter session set container=&&PDB_NAME;
+
+set echo on
+
+select tablespace_name
+from cdb_tablespaces a,
+     dba_pdbs b
+where a.con_id = b.con_id
+  and upper(b.pdb_name)=upper('&&PDB_NAME');
+
+connect "SYS"/"&&sysPassword" as SYSDBA
+
+alter session set container=&&PDB_NAME;
+
+set echo on
+
+select count(*)
+from dba_registry
+where comp_id='DV'
+  and status='VALID';
+
+show con_name;
+
+alter session set container=&&PDB_NAME;
+
+select count(a.username)
+from cdb_users a,
+     v$pdbs b
+where a.con_id = b.con_id
+  and a.username = upper('PDBADMIN')
+  and upper(b.name)=upper('&&PDB_NAME');
+
+show con_name;
+
+-- the generated script contained these two... ???
+alter session set container="CDB$ROOT";
+alter session set container=CDB$ROOT;
+
+prompt .
+prompt post pdb-creation done.
+prompt .
+
+spool off
 EOF
 }
 
