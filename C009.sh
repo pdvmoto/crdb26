@@ -77,7 +77,13 @@ export CRDB2=2_crdb_catalog.sql
 export CRDB3=3_crdb_comp.sql
 export CRDB4=4_crdb_pdb.sql
 
-export CREATED_DT=$(date +"%Y-%m-%d_%H-%M-%S")
+# utilities
+export    ACCPWDS=accpwds.sql
+export    SEC_CRE=sec_cre.sql
+export   LOCK_ACC=lock_accounts.sql
+export   CHK_CRDB=chk_crdb1.sql
+
+export CREATED_DT=$(date +"%Y-%m-%d_%H:%M:%S")
 
 echo . ....................... announce and prompt ....................
 echo .
@@ -118,11 +124,11 @@ f_mk_init_ora()
 # inlcude a check-exist, dont overwrite existing file
 
 if [ -e ${INIT_ORA} ]; then
-    echo File ${INIT_ORA} already exists. Keep Existing.
+    echo File ${INIT_ORA} already exists. Not overwriting
     return
 fi
 
-echo $0 : "Generating ${INIT_ORA} ..."
+echo $0 : Generating ${INIT_ORA} ...
 
 cat <<EOF > ${INIT_ORA}
 #
@@ -162,7 +168,7 @@ remote_login_passwordfile = EXCLUSIVE
 
 EOF
 
-echo $0 : "Generated ${INIT_ORA} ..."
+# echo $0 : "Generated ${INIT_ORA} ..."
 
 }
 
@@ -197,7 +203,7 @@ if [ -e ${CRDB1} ]; then
     return
 fi
 
-echo $0 : "Generating $CRDB1 ..."
+echo $0 : Generating $CRDB1 ...
 
 cat << EOF > $CRDB1
 
@@ -272,7 +278,7 @@ set echo off
 
 EOF
 
-echo $0 : created the script ${CRDB1} 
+# echo $0 : created the script ${CRDB1} 
 
 }
 
@@ -769,14 +775,50 @@ EOF
 
 
 ##############################################################################
+# Generate accpwds.sql, not best practice, but dflst here..
+##############################################################################
+f_mk_accpwds()
+{
+  if [ -e ${ACCPWDS} ]; then
+      echo $0 : File ${ACCPWDS} already exists. Not overwriting.
+      return
+  fi
+
+  echo $0 : Generating ${ACCPWDS}.sql ... 
+
+  cat > ${ACCPWDS} <<'EOF'
+--
+-- original, and "good practice" would be...
+-- ACCEPT sysPassword CHAR PROMPT 'Enter new password for SYS: ' HIDE
+-- ACCEPT systemPassword CHAR PROMPT 'Enter new password for SYSTEM: ' HIDE
+-- ACCEPT pdbAdminPassword CHAR PROMPT 'Enter new password for PDBADMIN: ' HIDE
+
+-- we are in a hurry, we dont like typos...
+
+define      sysPassword=oracle
+define   systemPassword=oracle
+define pdbAdminPassword=oracle
+
+-- prompt three pwds set
+EOF
+
+# echo $0 : generated ${ACCPWDS}
+
+}
+
+##############################################################################
 # Generate scs_since_cre.sql
 ##############################################################################
 f_mk_sec_cre()
 {
-    echo
-    echo $0 : Generating sec_cre.sql ...
+  if [ -e ${SEC_CRE} ]; then
+      echo $0 : File ${SEC_CRE} already exists. Not overwriting.
+      return
+  fi
 
-    cat > sec_cre.sql <<'EOF'
+  echo $0 : Generating ${SEC_CRE}.sql ... 
+
+  cat > ${SEC_CRE} <<'EOF'
 --
 -- log seconds since "create database" to stdout.
 -- useful during create-scripts, purely curiosity and speed measurement
@@ -794,6 +836,9 @@ select ( sysdate - created ) * 24 * 3600 as sec_cre,
 from   v$database
 /
 EOF
+
+# echo $0 : created ${SEC_CRE}
+
 }
 
 ##############################################################################
@@ -801,10 +846,14 @@ EOF
 ##############################################################################
 f_mk_chk_crdb1()
 {
-    echo
-    echo "Generating chk_crdb1.sql ..."
+  if [ -e ${CHK_CRDB} ]; then
+      echo $0 : File ${CHK_CRDB} already exists. Not overwriting.
+      return
+  fi
 
-    cat > chk_crdb1.sql <<'EOF'
+  echo $0 : Generating ${CHK_CRDB}.sql ... 
+
+  cat > ${CHK_CRDB} <<'EOF'
 rem
 rem checks after first crdb
 rem
@@ -914,52 +963,43 @@ EOF
 ##############################################################################
 f_mk_lock_accounts()
 {
-    echo
-    echo "Generating lock_accounts.sql ..."
+  if [ -e ${LOCK_ACC} ]; then
+      echo $0 : File ${LOCK_ACC} already exists. Not overwriting.
+      return
+  fi
 
-    cat > lock_accounts.sql <<'EOF'
+  echo $0 : Generating ${LOCK_ACC}.sql ... 
+
+  cat > ${LOCK_ACC} <<'EOF'
 --
 -- original from lockAccounts, extracted into separate file,
 -- statement was identical in both locations, hence extracted
--- called for CDB$ROOT and PDB$SEED
---
+-- now call this for cdb$root and pdb$seed
 
 BEGIN
-  FOR item IN (
-      SELECT username,
-             authentication_type
-      FROM   dba_users
-      WHERE  account_status IN ('OPEN', 'LOCKED', 'EXPIRED')
-      AND    username NOT IN (
-                 'SYS',
-                 'SYSTEM',
-                 'SYSRAC',
-                 'XS$NULL'
-             )
-  )
-  LOOP
-    IF item.authentication_type = 'PASSWORD' THEN
-      dbms_output.put_line('Locking and Expiring: ' || item.username);
-
-      EXECUTE IMMEDIATE
-          'alter user '
-       || sys.dbms_assert.enquote_name(
-             sys.dbms_assert.schema_name(item.username), FALSE)
-       || ' password expire account lock';
-
-    ELSE
-      dbms_output.put_line('Locking: ' || item.username);
-
-      EXECUTE IMMEDIATE
-          'alter user '
-       || sys.dbms_assert.enquote_name(
-             sys.dbms_assert.schema_name(item.username), FALSE)
-       || ' account lock';
-    END IF;
-  END LOOP;
+ FOR item IN ( SELECT USERNAME, AUTHENTICATION_TYPE FROM DBA_USERS WHERE ACCOUNT_STATUS IN ('OPEN', 'LOCKED', 'EXPIRED') AND USERNAME NOT IN (
+'SYS','SYSTEM','SYSRAC','XS$NULL') )
+ LOOP
+IF item.AUTHENTICATION_TYPE='PASSWORD' THEN
+  dbms_output.put_line('Locking and Expiring: ' || item.USERNAME);
+  execute immediate 'alter user ' ||
+   sys.dbms_assert.enquote_name(
+   sys.dbms_assert.schema_name(
+   item.USERNAME),false) || ' password expire account lock' ;
+ ELSE
+  dbms_output.put_line('Locking: ' || item.USERNAME);
+  execute immediate 'alter user ' ||
+   sys.dbms_assert.enquote_name(
+   sys.dbms_assert.schema_name(
+   item.USERNAME),false) || ' account lock' ;
+ END IF;
+ END LOOP;
 END;
 /
 EOF
+
+# echo $0: Generated ${LOCK_ACC} 
+
 }
 
 
@@ -971,25 +1011,71 @@ EOF
 # sec_cre, chk_crdb1, 31_crdb_lock_acc, ctl_to_init
 
 echo $0 : Generating utilities...
+echo .
 
 f_mk_sec_cre
 f_mk_chk_crdb1
 f_mk_lock_accounts
+f_mk_accpwds
 
-# todo:
-# f_mk_31_crdb_lock_acc
-# f_mk_ctl_to_init
-# f_mk_accpwd
-
+echo .
 echo $0 : Utilities created.
+echo .
 
+#
+# generate create-stmnts and catalog
+#
+f_mk_init_ora
+f_mk_1_crdb_create
+f_mk_2_crdb_catalog
+f_mk_3_crdb_comp
+f_mk_4_crdb_pdb
 
-################ mkdirs, Real Work starts Here #######################################
+echo .
+echo $0 : Create-statements generated to files..
+echo .
+
+# 
+# now list and ask for confirmation
+#
+
+echo ... 
+echo ... list the sql files in this dir
+echo ...
+
+ls -l *.sql
+
+echo ...
+echo ................... Files Created ................
+echo ... 
+echo ... All files are created or detected.
+echo ... You can proceed to create with Enter, and create ${ORACLE_SID}
+echo ... Or enter any word to exit and examine the files...
+echo ... 
+read -t15 -p"Files created, press enter to proceed, or N to stop..." ABC
+
+if [ -n "${ABC}" ]; then
+  echo .
+  echo No Database ${ORACLE_SID} will be created yet.
+  echo .
+  echo You can examine the generated files and create the database later...
+  echo .
+  exit 0
+fi
+
+echo .
+echo $0 : Continuing to create database ${ORACLE_SID} .... 
+echo .
+
+########## mkdirs, Real Work starts Here ####################################
 #
 # mkdirs..
 # creating paths, code from generated script
 # note: consider using $ORACLE_BASE, $ORACLE_HOME, $ORACLE_DATA, $ORACLE_FLRA
 #
+
+echo $0 : creating directories...
+
 OLD_UMASK=`umask`
 umask 0027
 mkdir -p /opt/oracle
@@ -1005,39 +1091,24 @@ mkdir -p /opt/oracle/oradata/${ORACLE_SID}
 mkdir -p /opt/oracle/oradata/${ORACLE_SID}/controlfile
 umask ${OLD_UMASK}
 
+echo .
+echo $0 : generating pwd file for ${ORACLE_SID}
+echo .
+
 # need a pwdfile, if only to be able to connect SQLDev for inspection
 orapwd file=${ORACLE_HOME}/dbs/orapw${ORACLE_SID} \
   password=oracle   \
   force=y format=12
 
 # 
-# generate init and copy it to location
-# optionally: do no generate, if file(s) already exist
-#
-f_mk_init_ora
-
+# copy init to location dbs
 # can out-comment the cp to allow to keep existing file in dbs
-cp ${INIT_ORA} ${ORACLE_SID}.ora ${ORACLE_HOME}/dbs/
+cp ${INIT_ORA} ${ORACLE_HOME}/dbs/
 
-# the pwdfile, later. Always overwritten.
-#
-# f_mk_pwdfile
 
-#
-# generate create-stmnts and catalog
-#
-f_mk_1_crdb_create
-f_mk_2_crdb_catalog
-f_mk_3_crdb_comp
-f_mk_4_crdb_pdbs
-
-# 
-# now list and ask for confirmation
-#
-
-# just testing
-exit
-
+echo ...................................................
+echo ... $0 : Starting CREATE DATABASE ${ORACLE_SID} ... 
+echo ...................................................
 
 ######################### for real ##################
 #
@@ -1055,13 +1126,13 @@ conn / as sysdba
 @accpwds
 
 -- run the script to Create Database
-@1_crdb_create
+@${CRDB1}
 
 prompt .
 prompt DB creation done, now showing pdbs and some info ... 
 prompt .
 
-@sec_cre first_message_since_creation
+@${SEC_CRE} First_message_since_creation
 
 host sleep 10
 
@@ -1069,7 +1140,7 @@ show pdbs
 
 set echo off
 
-@chk_crdb1
+@${CHK_CRDB}
 
 @chk_early
 
@@ -1100,7 +1171,7 @@ connect / as sysdba
 
 -- script nr 2: catalog, and some other cmds from CreateDBCatalog
 
-@2_crdb_catalog
+@${CRDB2}
 
 set echo off
 set feedb off
@@ -1109,14 +1180,14 @@ set feedb off
 @sec_cre timing_of_2_crdb_catalog
 
 prompt .
-prompt 2_crdb_catalog.sql: done. Catalog created
+prompt ${CRDB2} : done. Catalog created
 prompt .
 prompt next are components from 3_crdb_comp
 prompt .
 
 host sleep 10 
 
-@3_crdb_comp
+@${CRDB3}
 
 set echo off
 set feedb off
@@ -1149,8 +1220,8 @@ connect / as sysdba
 -- script nr 4: add one or more pdbs
 -- in this case: the old known values
 
-@4_crdb_pdb freepdb1
-@4_crdb_pdb orcl
+@${CRDB4} freepdb1
+@${CRDB4} orcl
 
 set echo off
 set feedb off
