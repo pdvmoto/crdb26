@@ -53,6 +53,7 @@
 #  - time the various stages: mk_files, execute..  and report duration
 #  - note: to have "set echo on" work : cat <<EOF> 1_crdb.sql 
 #	   This would make for better log- and traceablility.. 
+#  - reduce comments
 #
 
 # set -v -x 
