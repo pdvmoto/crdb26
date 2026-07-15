@@ -6,26 +6,26 @@
 #   I took the sql-files and init.ora and put them in to into SID.sh
 #
 # The Conecpt:
-#   - you can run this one file to create a database.
-#   - the (hardcoded) SID is in 1 place, the SID is FILE part of this FILE.sh 
+#   - You can run this one file to create a database.
+#   - The (hardcoded) SID is in 1 place, the SID is FILE part of this FILE.sh 
 #   - ORACLE_BNASE and _HOME have to be set correctly.
-#   - all files: init, crdb1/2/3/4, and utilities will be Created if Needed.
-#   - you can [optionally] inspect the created files before they run
-#   - you can provide bespoke files (edited files), they wont be over-written.
-#   - script will ask and allow interrupt before execution of script.
+#   - All files: init, crdb1/2/3/4, and utilities will be Created if Needed.
+#   - You can [optionally] inspect the created files before they run
+#   - You can provide bespoke files (edited files), they wont be over-written.
+#   - Script will ask and allow interrupt before execution of script.
 #
-# the files that will be created (if not exist) are:
-#   initSID.ora : and move it to dbs    (keep if exist) chk
+# The files that will be created (if not exist) are:
+#   initSID.ora : and move it to dbs    (keep if exist) 
 #   pwdSID : and move to dbs            (always overwrite) todo
 #   accpwds.sql : the defines for passwords, you dont have to type..
-#   1_crdb_create.sql                   (always overwrite?) chk
+#   1_crdb_create.sql                   (always overwrite?) 
 #   2_crdb_catalog.sql                  (keep if exist)
 #   3_crdb_comp.sql
-#   4_crdb_pdb.sql                      (chk)
+#   4_crdb_pdb.sql                      
 #   lock_accounts.sql
 #
 # And some utilities:
-#   sec_cre.sql 
+#   sec_cre.sql
 #   chk_crdb1.sql : first check after create, includes the "early" check
 #   chk_postcre.sql : list some items at the end.. 
 #   [todo] ctlfiles_to_init.sql: not needed, create spfile earlier.
@@ -33,6 +33,7 @@
 #
 # Concept is 
 # 1) to generate the script (with non hardcoded SID in them): mk_file()
+#    allow bespoke-code: do not generate script if exist.
 # 2) ask user to execute or just keep/view the scripts
 # 3) if no read-input given: just execute and create the db: do_file()
 # 4) spooled output to log_SID.log or to individual files ?
@@ -43,14 +44,14 @@
 # todo:
 #  - lots of ideas, lot of things to try. see blogs, notes.
 #  - include an option to stop+review. 
+#  - the init needs more comments
 #  - devise a way to inlcud $CREATED_DT into the generated scripts
-#  - allow bespoke-code: do not generate script if exist (done)
 #  - including a master-sql to run the generated scripts: SID.do ? 
 #  - some files are quoted-EOF, others are expanded-EOF (with SID)
 #  - the creation of directories is stil messy, improve if possible
 #  - [useful?] include a "rm_SID" script to shutdown + cleanup ? 
 #  - allow for a Env-var to contain additional PDBs (space-separated?)
-#  - time the various stages: mk_files, execute..  and report duration
+#  - if controlfile(s) not specified: include in init, after 1_crdb
 #  - note: to have "set echo on" work : cat <<EOF> 1_crdb.sql 
 #	   This would make for better log- and traceablility.. 
 #  - reduce comments
@@ -135,36 +136,48 @@ cat <<EOF > ${INIT_ORA}
 #
 # init.ora generated from $0 at ${CREATED_DT}
 #
-
+                                        # need db_name to prevent ORA-01506
 db_name              = ${ORACLE_SID}
 
-                              # #### FILES ####
+                                        # #### FILES ####
 
+                                        # file-destinations is important
 db_create_file_dest  = /opt/oracle/oradata
 
-# db_recovery_file_dest      = /opt/oracle/fast_recovery_area
+                                        # reco, Only if need multiplexing
+# db_recovery_file_dest      = /opt/oracle/fast_recovery_area"
 # db_recovery_file_dest_size = 21987m
 
+                                        # explicit controlfile, or use OMF
 control_files        = /opt/oracle/oradata/${ORACLE_SID}/controlfile/control01.ctl
 
+                                        # this will create the diag if needed
 diagnostic_dest      = ${ORACLE_BASE}
 
-# audit_file_dest    = ${ORACLE_BASE}/audit
+# audit_file_dest      = ${ORACLE_BASE}/audit   # consider unified auditing.
 
-                              # #### MEMORY ####
 
-sga_target           = 2500M
+                                        # #### MEMORY ####
+
+
+sga_target           = 2500M            # 1500M will fit inside FREE
 pga_aggregate_target = 512M
 
+                                        # dflt was rather high at 680
 processes            = 200
+                                        # dflt was rather low at 50
 open_cursors         = 300
 
-                              # #### VARIOUS ####
+                                        # #### Various ####
 
+                                        # need this to connect from remote
 remote_login_passwordfile = EXCLUSIVE
 
-# undo_tablespace    = SYS_UNDOTS
+                                        # UNDO, I reverted to dflt
+# undo_tablespace      = UNDOTBS1       # but veryone uses this name
+# undo_tablespace      = SYS_UNDOTS     # this is dflt when not specified
 
+                                        # add some performance during create?
 # control_management_pack_access = NONE
 
 EOF
@@ -182,9 +195,9 @@ EOF
 # note conventional here-doc with EOF, 
 #   need to escape for : PDB\$SEED 
 #
-#
 # Big Advantages of generating the file: 
 # 1) everything is in ONE FILE 
+#    only one place to define SID
 # 2) set echo works, shows what is happening, and into log-file
 # .) ..
 # 
@@ -440,7 +453,7 @@ connect "SYS"/"&&sysPassword" as SYSDBA
 set echo on
 
 -- start with some Defines to shorten the commands, define RCTL and RCON
--- notice how -l sends lofiles to /tmp
+-- notice how -l sends logfiles to /tmp
 -- notice how catctl does not have a -v
 
 /**** 
@@ -800,7 +813,6 @@ define      sysPassword=oracle
 define   systemPassword=oracle
 define pdbAdminPassword=oracle
 
--- prompt three pwds set
 EOF
 
 # echo $0 : generated ${ACCPWDS}
@@ -954,6 +966,207 @@ set echo off
 
 prompt  also include chk_early.sql
 
+-- cdb + pdbs: sizes + files
+
+
+doc
+        copied from checks..
+  (and probable some leftover columns and queries)
+#
+
+set heading on
+set feedback off
+set lines 128
+set pagesize 30
+
+column  tablespace_name format a30
+column  mfree           format 999,999,999
+column  mused           format 999,999,999
+column  total           format A30
+column  mtotal          format 999,999,999
+column  mb_total        format 999,999,999
+column  mb_file         format 999,999,999
+column  perc_free       format 999.99
+
+column con              format 999
+column tsnr             format 999
+column fname            format A50
+column f_name           format A50
+column tsname           format A20 trunc
+column pdb_name         format A12
+column open_mode        format A12
+column inst             format 9999 head inst
+
+
+break on pdb_name on con_id
+
+prompt .
+prompt name the PDBs and tablespaces.
+prompt Beware: this excludes the CDB
+prompt .
+
+select  df.con_id  as con_id
+      , p.name     as pdb_name
+      , ts.ts#     as tsnr
+      , ts.name    as tsname
+      , round ( sum ( bytes /( 1024 * 1024) ) ) mb_total
+      --, df.*
+from v$datafile   df
+   , v$tablespace ts
+   , v$containers p
+where ts.con_id    = df.con_id
+  and p.con_id     = ts.con_id
+  and ts.ts# = df.ts#
+group by df.con_id, p.name, ts.ts#, ts.name
+order by df.con_id, ts.ts#
+/
+
+-- just containers and files, us V$ instead of GV$
+
+with all_con_ids as
+  (  select con_id, name, open_mode from v$database
+  union all
+     select con_id, name, open_mode from v$containers
+  )
+select c.con_id, c.name pdb_name, c.open_mode
+, sum ( df.bytes ) / ( 1024 * 1024 )    as mb_total
+from all_con_ids  c
+   , v$datafile  df
+where c.con_id = df.con_id
+group by c.con_id, c.name, c.open_mode
+order by c.con_id
+;
+
+select
+'Total : ' as total,  round ( sum ( bytes /( 1024 * 1024) ) ) mtotal
+from v$datafile df;
+
+-- individual files, try adding NEXT
+
+with all_con_ids as
+  (  select con_id, name, open_mode from v$database
+  union all
+     select con_id, name, open_mode from v$containers
+  )
+select c.con_id, c.name pdb_name
+,  df.bytes / ( 1024 * 1024 )       as mb_file
+,  substr ( df.name , -40 )       f_name
+from all_con_ids  c
+   , v$datafile  df
+where c.con_id = df.con_id
+order by c.con_id
+;
+
+
+prompt .
+prompt . check , compare to old leftovers..
+prompt .
+
+
+-- now the demo with session and process..
+
+column usrnm    format  A12 trunc
+column osusr    format  A12 trunc
+column machine    format  A20 trunc
+column program    format  A12 trunc
+column process    format  A10
+column logon_time   format A20
+column spid   format 99999
+column inst             format 999
+column serial           format 9999
+column sid              format 999
+column sidser           format A70
+column status           format A15
+
+
+column con_id    format 9999
+column pdb_name  format A10
+column total     format A20
+
+
+prompt .
+prompt .
+prompt where do connections and processes go, per instance and per PDB...
+prompt .
+
+
+-- now combine
+with all_cont as (
+  select con_id, inst_id, name, open_mode from gv$database
+   union all
+  select con_id, inst_id, name, open_mode from gv$containers
+  )
+, sum_procs as (
+  select con_id, inst_id, count (*) cnt_procs
+  from gv$process
+  group by con_id, inst_id
+  )
+, sum_sess as (
+  select con_id, inst_id, count (*) cnt_sess
+  from gv$session
+  group by con_id, inst_id
+)
+select c.con_id, c.name pdb_name, p.inst_id, cnt_procs, cnt_sess
+from all_cont  c
+   left outer join  sum_procs p on p.con_id   = c.con_id and p.inst_id  = c.inst_id
+   left outer join  sum_sess  s on s.con_id   = c.con_id and s.inst_id  = c.inst_id
+order by c.con_id nulls first
+;
+
+prompt .
+prompt .
+host read -t15 -p "check connections and processes " abc
+
+
+-- sga and resize events.
+
+show sga
+
+doc
+
+        show sga size and memory resize ops (did it vary a lot?)
+
+        note: values may differ from set-parameter (??)
+        this is acutal claimed amount.
+
+#
+
+column name              format A35 trunc
+column value             format A16 wrap
+column nr_mem_resize_ops format 9,999
+column datetime          format A20
+column file_resize_ops   format 999,999
+
+select nvl ( pool, name )                        as name
+     , to_char ( sum(bytes),  '999,999,999,999' ) as value
+from v$sgastat
+where 1=1 -- pool is not null
+group by nvl ( pool, name )
+order by name
+/
+
+select 'Total SGA'                               as name
+     , to_char ( sum(bytes),  '999,999,999,999' ) as value
+from v$sgastat
+where 1=1 -- pool is not null
+group by 'Total SGA'
+/
+
+-- recent sga_resizes
+select inst_id, count (*) nr_mem_resize_ops from gv$memory_resize_ops
+group by inst_id
+order by inst_id ;
+
+-- how many resize ops in last day
+
+select to_char ( originating_timestamp, 'DD - HH24:MI' ) datetime, count (*) file_resize_ops
+from V$DIAG_ALERT_EXT
+where message_text like 'Resize%'
+and originating_timestamp > ( sysdate - 24 )
+group by to_char ( originating_timestamp, 'DD - HH24:MI' )
+order by 1 desc ;
+
+-- resize of files form v$alert ?
 
 EOF
 
@@ -1002,10 +1215,6 @@ EOF
 # echo $0: Generated ${LOCK_ACC} 
 
 }
-
-
-# youarehere
-
 
 ##################### utilities ######################
 # create the utilities:  call functions to do so
@@ -1143,7 +1352,7 @@ set echo off
 
 @${CHK_CRDB}
 
-@chk_early
+-- @chk_early
 
 prompt .
 prompt Exit for now. Add other script below later.
@@ -1193,8 +1402,8 @@ host sleep 10
 set echo off
 set feedb off
 
-@sec_cre third_message_since_creation
-@sec_cre timing_of_3_crdb_comp
+@${SEC_CRE} third_message_since_creation
+@${SEC_CRE} timing_of_3_crdb_comp
 
 prompt .
 prompt 3_crdb_comp.sql: components added, accounts locked, datapatch done
@@ -1227,8 +1436,8 @@ connect / as sysdba
 set echo off
 set feedb off
 
-@sec_cre fourth message since creation
-@sec_cre timing_of_4_crdb_pdb
+@${SEC_CRE} fourth message since creation
+@${SEC_CRE} timing_of_4_crdb_pdb
 
 prompt .
 prompt 4_crdb_pdb.sql: done. two PDBs created
