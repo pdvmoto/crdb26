@@ -7,12 +7,12 @@
 #
 # The Conecpt:
 #   - You can run this one file to create a database.
-#   - The (hardcoded) SID is in 1 place, the SID is FILE part of this FILE.sh 
+#   - The (hardcoded) SID is in 1 place, the SID is the FILE part of FILE.sh 
 #   - ORACLE_BNASE and _HOME have to be set correctly.
 #   - All files: init, crdb1/2/3/4, and utilities will be Created if Needed.
+#   - Script will ask and allow interrupt before execution of the scripts.
 #   - You can [optionally] inspect the created files before they run
 #   - You can provide bespoke files (edited files), they wont be over-written.
-#   - Script will ask and allow interrupt before execution of script.
 #
 # The files that will be created (if not exist) are:
 #   initSID.ora : and move it to dbs    (keep if exist) 
@@ -27,7 +27,7 @@
 # And some utilities:
 #   sec_cre.sql
 #   chk_crdb1.sql : first check after create, includes the "early" check
-#   chk_postcre.sql : list some items at the end.. 
+#   [todo] chk_postcre.sql : list some items at the end.. 
 #   [todo] ctlfiles_to_init.sql: not needed, create spfile earlier.
 #   [todo] f_mk_31_crdb_lock, and f_mk_accpwds
 #
@@ -43,17 +43,13 @@
 #
 # todo:
 #  - lots of ideas, lot of things to try. see blogs, notes.
-#  - include an option to stop+review. 
-#  - the init needs more comments
-#  - devise a way to inlcud $CREATED_DT into the generated scripts
+#  - devise a way to inlcude hostname and $CREATED_DT into scripts
 #  - including a master-sql to run the generated scripts: SID.do ? 
 #  - some files are quoted-EOF, others are expanded-EOF (with SID)
 #  - the creation of directories is stil messy, improve if possible
 #  - [useful?] include a "rm_SID" script to shutdown + cleanup ? 
 #  - allow for a Env-var to contain additional PDBs (space-separated?)
 #  - if controlfile(s) not specified: include in init, after 1_crdb
-#  - note: to have "set echo on" work : cat <<EOF> 1_crdb.sql 
-#	   This would make for better log- and traceablility.. 
 #  - reduce comments
 #
 
@@ -160,7 +156,7 @@ diagnostic_dest      = ${ORACLE_BASE}
                                         # #### MEMORY ####
 
 
-sga_target           = 2500M            # 1500M will fit inside FREE
+sga_target           = 1500M            # 1500M will fit inside FREE
 pga_aggregate_target = 512M
 
                                         # dflt was rather high at 680
@@ -219,7 +215,10 @@ fi
 
 echo $0 : Generating $CRDB1 ...
 
-cat << EOF > $CRDB1
+cat << EOF > ${CRDB1}
+--
+-- file: ${CRDB1}. Generated from $0 at ${CREATED_DT}
+--
 
 -- pick up defined passwords
 @accpwds
@@ -312,7 +311,13 @@ f_mk_2_crdb_catalog()
 
   echo $0 : Generating ${CRDB2}.sql ... 
 
-  # include check on exist
+
+  cat >${CRDB2}<<EOF
+--
+-- file: ${CRDB2}. Generated from $0 at ${CREATED_DT}
+--
+EOF
+
 
   cat >${CRDB2} <<'EOF'
 -- 2_crdb : contains the db-files and db-catalog parts
@@ -1435,6 +1440,11 @@ connect / as sysdba
 
 set echo off
 set feedb off
+
+-- final checks
+@${CRDB1}
+
+select comp_id, status from dba_registry;
 
 @${SEC_CRE} fourth message since creation
 @${SEC_CRE} timing_of_4_crdb_pdb
