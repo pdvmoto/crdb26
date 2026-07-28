@@ -7,22 +7,23 @@
 #
 # The Conecpt:
 #   - You can run this one file to create a database.
+#   - the ORACLE_SID will be the BASE.sh of the file, without the .sh
 #   - The (hardcoded) SID is in 1 place, the SID is the FILE part of FILE.sh 
-#   - ORACLE_BNASE and _HOME have to be set correctly.
+#   - ORACLE_BASE and _HOME have to be set correctly.
 #   - All files: init, crdb1/2/3/4, and utilities will be Created if Needed.
 #   - Script will ask and allow interrupt before execution of the scripts.
 #   - You can [optionally] inspect the created files before they run
 #   - You can provide bespoke files (edited files), they wont be over-written.
 #
 # The files that will be created (if not exist) are:
-#   initSID.ora : and move it to dbs    (keep if exist) 
-#   pwdSID : and move to dbs            (always overwrite) todo
-#   accpwds.sql : the defines for passwords, you dont have to type..
-#   1_crdb_create.sql                   (always overwrite?) 
-#   2_crdb_catalog.sql                  (keep if exist)
-#   3_crdb_comp.sql
-#   4_crdb_pdb.sql                      
-#   lock_accounts.sql
+#   initSID.ora : and move it to dbs      (keep if exist) 
+#   pwdSID : and move to dbs              (always overwrite)
+#   1_crdb_create.sql                     (keep if exist) 
+#   2_crdb_catalog.sql                    (..)
+#   3_crdb_comp.sql                       (..)
+#   4_crdb_pdb.sql                        (..)
+#   lock_accounts.sql                     (..)
+#   accpwds.sql : defines passwords, you dont have to type..
 #
 # And some utilities:
 #   sec_cre.sql
@@ -44,8 +45,9 @@
 # todo:
 #  - lots of ideas, lot of things to try. see blogs, notes.
 #  - devise a way to inlcude hostname and $CREATED_DT into scripts
-#  - including a master-sql to run the generated scripts: SID.do ? 
-#  - some files are quoted-EOF, others are expanded-EOF (with SID)
+#  - only use BASE.sh as uppercase, fix mixed case.
+#  - including a master-sql to run the generated scripts: SID.sql ? 
+#  - some files are quoted-EOF, others are expanded-EOF (with SID). And ?
 #  - the creation of directories is stil messy, improve if possible
 #  - [useful?] include a "rm_SID" script to shutdown + cleanup ? 
 #  - allow for a Env-var to contain additional PDBs (space-separated?)
@@ -82,39 +84,42 @@ export   LOCK_ACC=lock_accounts.sql
 export   CHK_CRDB=chk_crdb1.sql
 
 export CREATED_DT=$(date +"%Y-%m-%d_%H:%M:%S")
+export ON_HOST=`hostname`
 
 echo . ....................... announce and prompt ....................
 echo .
-echo You are about to create a new container DB : $ORACLE_SID
+echo . You are about to create a new container DB : $ORACLE_SID
 echo .
-echo Next: check the env-variables and the init.ora:
+echo . Next: check the env-variables and the init.ora:
 echo .
-echo "ORACLE_BASE= " $ORACLE_BASE
-echo "ORACLE_HOME= " $ORACLE_HOME
+echo ". ORACLE_BASE = " $ORACLE_BASE
+echo ". ORACLE_HOME = " $ORACLE_HOME
 echo .
-echo "ORACLE_SID=  " $ORACLE_SID ... "(" $ORACLE_SID_LOWER ")"
+echo ". ORACLE_SID  =  " $ORACLE_SID ... "(" $ORACLE_SID_LOWER ")"
 echo .
-echo "Create time= " $CREATED_DT
+echo ". On host     = " $ON_HOST
+echo ". Create time = " $CREATED_DT
 echo .
 echo .
-read -p "Check, and use Control-C to cancel, if correct hit enter..." -t10 abc
+read -p ". Control-C to cancel, if correct hit enter to generate scripts..." -t10 abc
 echo .
 
 
 ##############################################################################
 # Generate INIT dot ORA ###########
-# using EOF and not 'EOF' so I can use env-vars to include info
+# using EOF and not 'EOF' so we can use env-vars to include info
 ##############################################################################
 #
 # generate a new, minimalistid, init.ora
-# initially I only needed the db_name
-# later I added some of the parameters from DBCA 
+# initially it only needed the db_name
+# later we added some of the parameters from DBCA 
 # and some from myself
 #
 # note: mk_init uses a convential EOF so the ENV-vars can expand
 #   other functions may use a quoted-EOF to include Dollar-signs.
 #
-# noteL: You can and should Experiment here.
+# note: You can and should Experiment here.
+#
 
 f_mk_init_ora()
 {
@@ -130,7 +135,7 @@ echo $0 : Generating ${INIT_ORA} ...
 
 cat <<EOF > ${INIT_ORA}
 #
-# init.ora generated from $0 at ${CREATED_DT}
+# file ${INIT_ORA} generated from $0 on host ${ON_HOST} at ${CREATED_DT} . 
 #
                                         # need db_name to prevent ORA-01506
 db_name              = ${ORACLE_SID}
@@ -215,10 +220,13 @@ fi
 
 echo $0 : Generating $CRDB1 ...
 
-cat << EOF > ${CRDB1}
+cat <<EOF > ${CRDB1}
 --
--- file: ${CRDB1}. Generated from $0 at ${CREATED_DT}
+-- file ${CRDB1} generated from $0 on host ${ON_HOST} at ${CREATED_DT} .
 --
+EOF
+
+cat << EOF >> ${CRDB1}
 
 -- pick up defined passwords
 @accpwds
@@ -1357,8 +1365,6 @@ set echo off
 
 @${CHK_CRDB}
 
--- @chk_early
-
 prompt .
 prompt Exit for now. Add other script below later.
 prompt .
@@ -1442,7 +1448,7 @@ set echo off
 set feedb off
 
 -- final checks
-@${CRDB1}
+@${CHK_CRDB}
 
 select comp_id, status from dba_registry;
 
