@@ -5,7 +5,7 @@
 # latest version: C009.sh: Single File to do it all..
 #   I took the sql-files and init.ora and put them in to into SID.sh
 #
-# The Conecpt:
+# The Concept:
 #   - You can run this one file to create a database.
 #   - the ORACLE_SID will be the BASE.sh of the file, without the .sh
 #   - The (hardcoded) SID is in 1 place, the SID is the FILE part of FILE.sh 
@@ -32,26 +32,27 @@
 #   [todo] ctlfiles_to_init.sql: not needed, create spfile earlier.
 #   [todo] f_mk_31_crdb_lock, and f_mk_accpwds
 #
-# Concept is 
-# 1) to generate the script (with non hardcoded SID in them): mk_file()
+# the idea is 
+# 1) to generate the scripts (with non hardcoded SID in them): mk_file()
 #    allow bespoke-code: do not generate script if exist.
 # 2) ask user to execute or just keep/view the scripts
-# 3) if no read-input given: just execute and create the db: do_file()
-# 4) spooled output to log_SID.log or to individual files ?
-#
-# Note: the new ORACLE_SID is the name of this script. 
-# we set that name as $ORACLE_SID and carry it wherever it is needed.
+# 3) if no input is given: just execute and create the db
+# 4) spool output to log_SID.log or to individual files ?
 #
 # todo:
 #  - lots of ideas, lot of things to try. see blogs, notes.
-#  - devise a way to inlcude hostname and $CREATED_DT into scripts
-#  - only use BASE.sh as uppercase, fix mixed case.
-#  - including a master-sql to run the generated scripts: SID.sql ? 
+#  - devise a way to inlcude hostname and $CREATED_DT into scripts (+/-done)
+#  - only use BASE.sh as uppercase, prevent/fix mixed case (done, needs tr)
+#  - include a master-sql to run the generated scripts: SID.sql ? 
 #  - some files are quoted-EOF, others are expanded-EOF (with SID). And ?
 #  - the creation of directories is stil messy, improve if possible
 #  - [useful?] include a "rm_SID" script to shutdown + cleanup ? 
+#  - consider a shutdown or come cleanup if error occurs (no, keep errors)
 #  - allow for a Env-var to contain additional PDBs (space-separated?)
 #  - if controlfile(s) not specified: include in init, after 1_crdb
+#  - use tr instead of ^^ and ,,
+#  - fix hardcoded accpwd  
+#  - beautify output (the echos...)
 #  - reduce comments
 #
 
@@ -65,6 +66,7 @@ trap 'echo; echo "Interrupted while processing $0 "; exit 130' INT
 
 ORACLE_SID="$(basename "$0")"
 ORACLE_SID="${ORACLE_SID%.*}"
+ORACLE_SID="${ORACLE_SID^^}"
 ORACLE_SID_LOWER=${ORACLE_SID,,}
 
 export ORACLE_SID
@@ -83,7 +85,7 @@ export    SEC_CRE=sec_cre.sql
 export   LOCK_ACC=lock_accounts.sql
 export   CHK_CRDB=chk_crdb1.sql
 
-export CREATED_DT=$(date +"%Y-%m-%d_%H:%M:%S")
+export CREATED_DT=$(date +"%Y-%m-%dT%H:%M:%S")
 export ON_HOST=`hostname`
 
 echo . ....................... announce and prompt ....................
@@ -103,6 +105,38 @@ echo .
 echo .
 read -p ". Control-C to cancel, if correct hit enter to generate scripts..." -t10 abc
 echo .
+
+# ############################################################
+#
+# Check function, see if the database is considered OK, notably after creation
+#
+
+f_test_db_ok()
+{
+
+  export ERRFILE=error_${ORACLE_SID}.log
+
+  sqlplus /nolog <<EOF>$ERRFILE
+    whenever sqlerror exit sql.sqlcode
+    whenever oserror exit failurE
+    connect / as sysdba
+    select open_mode from v\$database;
+    exit 0
+EOF
+
+  rc=$?
+
+  if [ ${rc} -ne 0 ]; then
+    :
+    # echo .
+    # echo ". WARNING: SQL*Plus failed with return code $rc"
+    # echo ". Check the file ${ERRFILE} and other logfiles for errors"
+    # echo .
+    # exit ${rc}
+  fi
+
+  return ${rc}
+}
 
 
 ##############################################################################
@@ -135,7 +169,10 @@ echo $0 : Generating ${INIT_ORA} ...
 
 cat <<EOF > ${INIT_ORA}
 #
-# file ${INIT_ORA} generated from $0 on host ${ON_HOST} at ${CREATED_DT} . 
+# file           : ${INIT_ORA} 
+# generated from : $0
+# on host        : ${ON_HOST}
+# dd             : ${CREATED_DT}
 #
                                         # need db_name to prevent ORA-01506
 db_name              = ${ORACLE_SID}
@@ -222,7 +259,10 @@ echo $0 : Generating $CRDB1 ...
 
 cat <<EOF > ${CRDB1}
 --
--- file ${CRDB1} generated from $0 on host ${ON_HOST} at ${CREATED_DT} .
+-- file           : ${CRDB1} 
+-- generated from : $0
+-- on host        : ${ON_HOST}
+-- dd             : ${CREATED_DT}
 --
 EOF
 
@@ -240,7 +280,7 @@ startup nomount
 set echo off
 
 prompt .
-prompt Startup nomount done, now creating database...
+prompt Startup nomount done. 10 sec to Check SGA, then creating database...
 prompt still with the simplest command possible
 prompt .
 
@@ -319,15 +359,17 @@ f_mk_2_crdb_catalog()
 
   echo $0 : Generating ${CRDB2}.sql ... 
 
-
-  cat >${CRDB2}<<EOF
+  cat <<EOF > ${CRDB2}
 --
--- file: ${CRDB2}. Generated from $0 at ${CREATED_DT}
+-- file           : ${CRDB2} 
+-- generated from : $0
+-- on host        : ${ON_HOST}
+-- dd             : ${CREATED_DT}
 --
 EOF
 
+  cat >>${CRDB2} <<'EOF'
 
-  cat >${CRDB2} <<'EOF'
 -- 2_crdb : contains the db-files and db-catalog parts
 --
 -- todo/questions
@@ -430,9 +472,18 @@ f_mk_3_crdb_comp()
 
   echo $0 : Generating ${CRDB3}.sql ... 
 
+  cat <<EOF > ${CRDB3}
+--
+-- file           : ${CRDB3} 
+-- generated from : $0
+-- on host        : ${ON_HOST}
+-- dd             : ${CREATED_DT}
+--
+EOF
+
   # use a "quoted here doc" to preserve use of $, & and \ 
 
-    cat >${CRDB3} <<'EOF'
+    cat >>${CRDB3} <<'EOF'
 -- 3_crdb : contains the various components and post creation
 -- 
 -- todo/questions
@@ -619,9 +670,16 @@ f_mk_4_crdb_pdb()
 
   echo $0 : Generating ${CRDB4}.sql ... 
 
-  # check exit
+  cat <<EOF > ${CRDB4}
+--
+-- file           : ${CRDB4}
+-- generated from : $0
+-- on host        : ${ON_HOST}
+-- dd             : ${CREATED_DT}
+--
+EOF
 
-  cat > ${CRDB4} <<'EOF'
+  cat >> ${CRDB4} <<'EOF'
 --
 -- 4_crdb : create one pdb (always try >1 to have multi-test)
 --
@@ -813,20 +871,32 @@ f_mk_accpwds()
 
   echo $0 : Generating ${ACCPWDS}.sql ... 
 
-  cat > ${ACCPWDS} <<'EOF'
+  cat <<EOF > ${ACCPWDS}
+--
+-- file           : ${ACCPWDS}
+-- generated from : $0
+-- on host        : ${ON_HOST}
+-- dd             : ${CREATED_DT}
+
+EOF
+
+  cat >> ${ACCPWDS} <<'EOF'
 --
 -- original, and "good practice" would be...
 -- ACCEPT sysPassword CHAR PROMPT 'Enter new password for SYS: ' HIDE
 -- ACCEPT systemPassword CHAR PROMPT 'Enter new password for SYSTEM: ' HIDE
 -- ACCEPT pdbAdminPassword CHAR PROMPT 'Enter new password for PDBADMIN: ' HIDE
 
--- we are in a hurry, we dont like typos...
+-- But we are in a hurry, and we dont like typos...
 
 define      sysPassword=oracle
 define   systemPassword=oracle
 define pdbAdminPassword=oracle
 
 EOF
+
+# OK, some simple protection then...
+chmod 600 ${ACCPWDS}
 
 # echo $0 : generated ${ACCPWDS}
 
@@ -844,7 +914,16 @@ f_mk_sec_cre()
 
   echo $0 : Generating ${SEC_CRE}.sql ... 
 
-  cat > ${SEC_CRE} <<'EOF'
+  cat <<EOF > ${SEC_CRE}
+--
+-- file           : ${SEC_CRE}
+-- generated from : $0
+-- on host        : ${ON_HOST}
+-- dd             : ${CREATED_DT}
+
+EOF
+
+  cat >> ${SEC_CRE} <<'EOF'
 --
 -- log seconds since "create database" to stdout.
 -- useful during create-scripts, purely curiosity and speed measurement
@@ -879,7 +958,16 @@ f_mk_chk_crdb1()
 
   echo $0 : Generating ${CHK_CRDB}.sql ... 
 
-  cat > ${CHK_CRDB} <<'EOF'
+  cat <<EOF > ${CHK_CRDB}
+--
+-- file           : ${CHK_CRDB}
+-- generated from : $0
+-- on host        : ${ON_HOST}
+-- dd             : ${CREATED_DT}
+
+EOF
+
+  cat >> ${CHK_CRDB} <<'EOF'
 rem
 rem checks after first crdb
 rem
@@ -1173,6 +1261,9 @@ order by inst_id ;
 -- how many resize ops in last day
 
 select to_char ( originating_timestamp, 'DD - HH24:MI' ) datetime, count (*) file_resize_ops
+
+echo Note: Error ORA-00942 does-not-exist is expected on first run.
+
 from V$DIAG_ALERT_EXT
 where message_text like 'Resize%'
 and originating_timestamp > ( sysdate - 24 )
@@ -1197,7 +1288,16 @@ f_mk_lock_accounts()
 
   echo $0 : Generating ${LOCK_ACC}.sql ... 
 
-  cat > ${LOCK_ACC} <<'EOF'
+  cat <<EOF > ${LOCK_ACC}
+--
+-- file           : ${LOCK_ACC}
+-- generated from : $0
+-- on host        : ${ON_HOST}
+-- dd             : ${CREATED_DT}
+
+EOF
+
+  cat >> ${LOCK_ACC} <<'EOF'
 --
 -- original from lockAccounts, extracted into separate file,
 -- statement was identical in both locations, hence extracted
@@ -1230,65 +1330,70 @@ EOF
 }
 
 ##################### utilities ######################
-# create the utilities:  call functions to do so
-# sec_cre, chk_crdb1, 31_crdb_lock_acc, ctl_to_init
 
-echo $0 : Generating utilities...
+echo . .................................. 
+echo .
+echo . $0 : Generating utilities...
 echo .
 
 f_mk_sec_cre
 f_mk_chk_crdb1
-f_mk_lock_accounts
 f_mk_accpwds
 
 echo .
-echo $0 : Utilities created.
+echo . $0 : Utilities created.
 echo .
 
-#
-# generate create-stmnts and catalog
-#
+##################### scripts ######################
+
+echo . .................................. 
+echo .
+echo . $0 : Generating Create-scripts ...
+echo .
+
 f_mk_init_ora
 f_mk_1_crdb_create
 f_mk_2_crdb_catalog
 f_mk_3_crdb_comp
 f_mk_4_crdb_pdb
+f_mk_lock_accounts
 
 echo .
-echo $0 : Create-statements generated to files..
+echo . $0 : Create-statements generated to files..
 echo .
 
 # 
 # now list and ask for confirmation
 #
 
-echo ... 
-echo ... list the sql files in this dir
-echo ...
+echo . 
+echo . List the sql files in this dir
+echo .
 
 ls -l *.sql
 
-echo ...
-echo ................... Files Created ................
-echo ... 
-echo ... All files are created or detected.
-echo ... You can proceed to create with Enter, and create ${ORACLE_SID}
-echo ... Or enter any word to exit and examine the files...
-echo ... 
+echo .
+echo . .................. Files Created ................
+echo . 
+echo . All files are created or detected.
+echo . You can proceed to create with Enter, and create ${ORACLE_SID}
+echo . Or enter any word to exit and examine the files...
+echo . 
 read -t15 -p"Files created, press enter to proceed, or N to stop..." ABC
 
 if [ -n "${ABC}" ]; then
   echo .
-  echo No Database ${ORACLE_SID} will be created yet.
+  echo . No Database ${ORACLE_SID} will be created yet.
   echo .
-  echo You can examine the generated files and create the database later...
+  echo . You can examine the generated files and create the database later...
   echo .
   exit 0
 fi
 
 echo .
-echo $0 : Continuing to create database ${ORACLE_SID} .... 
+echo . $0 : Continuing to create database ${ORACLE_SID} .... 
 echo .
+
 
 ########## mkdirs, Real Work starts Here ####################################
 #
@@ -1297,7 +1402,7 @@ echo .
 # note: consider using $ORACLE_BASE, $ORACLE_HOME, $ORACLE_DATA, $ORACLE_FLRA
 #
 
-echo $0 : creating directories...
+echo . $0 : creating directories...
 
 OLD_UMASK=`umask`
 umask 0027
@@ -1315,7 +1420,7 @@ mkdir -p /opt/oracle/oradata/${ORACLE_SID}/controlfile
 umask ${OLD_UMASK}
 
 echo .
-echo $0 : generating pwd file for ${ORACLE_SID}
+echo . $0 : generating pwd file for ${ORACLE_SID}
 echo .
 
 # need a pwdfile, if only to be able to connect SQLDev for inspection
@@ -1372,6 +1477,28 @@ prompt .
 exit
 
 EOF
+
+# check to prevent running the next scripts against a "broken datatabase" 
+
+f_test_db_ok
+err=$?
+
+# echo err return is : $err
+
+if [ ${err} -ne 0 ]; then
+  echo 
+  echo . $0 ....... ERROR ........
+  echo .
+  echo . $0 : Error reported after Create Database.
+  echo . $0 : Check logfiles.
+  echo . $0 : Fix error and Clean-up files and processes, then re-try
+  echo .
+  echo . $0 : Exiting with error code ${err}
+  echo . $0 ......................
+  echo 
+
+  exit ${err}
+fi
 
 echo .
 echo Created Database $ORACLE_SID
