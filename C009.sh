@@ -30,7 +30,7 @@
 #   chk_crdb1.sql : first check after create, includes the "early" check
 #   [todo] chk_postcre.sql : list some items at the end.. 
 #   [todo] ctlfiles_to_init.sql: not needed, create spfile earlier.
-#   [todo] f_mk_31_crdb_lock
+#   [todo] f_mk_31_crdb_lock, and f_mk_accpwds
 #
 # the idea is 
 # 1) to generate the scripts (with non hardcoded SID in them): mk_file()
@@ -41,20 +41,19 @@
 #
 # todo:
 #  - lots of ideas, lot of things to try. see blogs, notes.
-#  - use ORACLE_BASE and ORACLE_HOME for the mkdir-actions.
 #  - devise a way to inlcude hostname and $CREATED_DT into scripts (+/-done)
-#  - only use BASE.sh as uppercase, prevent/fix mixed case (+/-done, needs tr)
+#  - only use BASE.sh as uppercase, prevent/fix mixed case (done, needs tr)
 #  - include a master-sql to run the generated scripts: SID.sql ? 
 #  - some files are quoted-EOF, others are expanded-EOF (with SID). And ?
 #  - the creation of directories is stil messy, improve if possible
+#  - run each create is ../admin/SID/scripts, keep separate logfiles
+#  - use /tmp/SID, prevent overwriting from different SIDs
 #  - [useful?] include a "rm_SID" script to shutdown + cleanup ? 
-#  - consider a shutdown or some cleanup if error occurs (no; keep errors)
+#  - consider a shutdown or come cleanup if error occurs (no, keep errors)
 #  - allow for a Env-var to contain additional PDBs (space-separated?)
-#  - if not as PDB, add ORCL, ORCLPDB1 and FREEPDB1 as services
 #  - if controlfile(s) not specified: include in init, after 1_crdb
 #  - use tr instead of ^^ and ,,
 #  - fix hardcoded accpwd  
-#  - more error checking and error-reporting ? 
 #  - beautify output (the echos...)
 #  - reduce comments
 #
@@ -69,7 +68,7 @@ trap 'echo; echo "Interrupted while processing $0 "; exit 130' INT
 
 ORACLE_SID="$(basename "$0")"
 ORACLE_SID="${ORACLE_SID%.*}"
-ORACLE_SID="${ORACLE_SID^^}"
+# ORACLE_SID="${ORACLE_SID^^}"
 ORACLE_SID_LOWER=${ORACLE_SID,,}
 
 export ORACLE_SID
@@ -91,10 +90,6 @@ export   CHK_CRDB=chk_crdb1.sql
 export CREATED_DT=$(date +"%Y-%m-%dT%H:%M:%S")
 export ON_HOST=`hostname`
 
-#
-# detect if SID is running, and EXIT if processes exist
-# 
-
 echo . ....................... announce and prompt ....................
 echo .
 echo . You are about to create a new container DB : $ORACLE_SID
@@ -113,8 +108,59 @@ echo .
 read -p ". Control-C to cancel, if correct hit enter to generate scripts..." -t10 abc
 echo .
 
-# from here on: make sure script goes running from private dir, 
-# do not mix scripts from different SIDs
+#
+# check ORACLE_BASE
+#
+if   [ -z "$ORACLE_BASE" ]   \
+  || [ ! -d "$ORACLE_BASE" ] \
+  || [ ! -r "$ORACLE_BASE" ] \
+  || [ ! -x "$ORACLE_BASE" ]
+then
+
+  # ORACLE_BASE is not set or is not an accessible directory: '$ORACLE_BASE'"
+
+  echo .
+  echo . .................. ERROR, ORACLE_BASE not usable ....................
+  echo .
+  echo . Please check you env list, you need and ORACLE_BASE
+  echo .
+  echo . ............................................................................
+
+  exit 1
+
+fi
+
+#
+# Check already running, prevent messy errors
+# 
+
+SIDCNT=$(ps -ef | grep "$ORACLE_SID" | grep -v grep | wc -l)
+
+if [ "$SIDCNT" -gt 10 ]; then
+
+  echo .
+  echo . .................. ERROR, ${ORACLE_SID} Already Running ....................
+  echo .
+  echo . Please check you ps list, it seems the instance already exists.
+  echo .
+  echo . ............................................................................
+
+  exit 1
+fi
+
+#
+# make sure you work from admin-dirs
+# create the dir, and work from there..
+#
+mkdir ${ORACLE_BASE}/admin/
+mkdir ${ORACLE_BASE}/admin/${ORACLE_SID}
+mkdir ${ORACLE_BASE}/admin/${ORACLE_SID}/scripts
+
+# make sure to keep a copy there..
+cp $0 ${ORACLE_BASE}/admin/${ORACLE_SID}/scripts/
+
+cd    ${ORACLE_BASE}/admin/${ORACLE_SID}/scripts/
+
 
 # ############################################################
 #
@@ -1240,7 +1286,7 @@ doc
         Note: an Error ORA-00942 does-not-exist is expected on first run.
 
         Note: values may differ from set-parameter (??)
-        this is acutal claimed amount.
+        Shown here are acutal claimed amounts.
 
 #
 
@@ -1271,10 +1317,6 @@ group by inst_id
 order by inst_id ;
 
 -- how many resize ops in last day
-
-select to_char ( originating_timestamp, 'DD - HH24:MI' ) datetime, count (*) file_resize_ops
-
--- Note: Error ORA-00942 does-not-exist is expected on first run.
 
 select to_char ( originating_timestamp, 'DD - HH24:MI' ) datetime, count (*) file_resize_ops
 from V$DIAG_ALERT_EXT
@@ -1354,7 +1396,7 @@ f_mk_chk_crdb1
 f_mk_accpwds
 
 echo .
-echo . $0 : Utilities created. Next parameterfiles and scripts
+echo . $0 : Utilities created.
 echo .
 
 ##################### scripts ######################
@@ -1390,8 +1432,9 @@ echo . .................. Files Created ................
 echo . 
 echo . All files are created or detected.
 echo . You can proceed to create with Enter, and create ${ORACLE_SID}
+echo . Or enter any word to exit and examine the files...
 echo . 
-read -t15 -p" . Files created, press enter to proceed, or N to stop..." ABC
+read -t15 -p"Files created, press enter to proceed, or N to stop..." ABC
 
 if [ -n "${ABC}" ]; then
   echo .
@@ -1604,8 +1647,6 @@ echo .
 echo Database $ORACLE_SID plus Two PDBs created...
 echo .
 echo Suggest to check datafiles and dflt parameters 
-echo .
-echo NB: Check your ORACLE_SID in various sessions when trying to logon...
 echo .
 read -t15 -p "Please Check, and enjoy using your database..." abc
 echo .
