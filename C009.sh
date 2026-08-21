@@ -217,7 +217,7 @@ f_mk_init_ora()
 # inlcude a check-exist, dont overwrite existing file
 
 if [ -e ${INIT_ORA} ]; then
-    echo File ${INIT_ORA} already exists. Not overwriting
+    echo $0 : File already exists : ${INIT_ORA}
     return
 fi
 
@@ -307,7 +307,7 @@ f_mk_1_crdb_create()
 {
 
 if [ -e ${CRDB1} ]; then
-    echo $0 : File ${CRDB1} already exists. Not overwriting.
+    echo $0 : File already exists : ${CRDB1}
     return
 fi
 
@@ -409,7 +409,7 @@ f_mk_2_crdb_catalog()
 {
 
   if [ -e ${CRDB2} ]; then
-      echo $0 : File ${CRDB2} already exists. Not overwriting.
+      echo $0 : File already exists : ${CRDB2}
       return
   fi
 
@@ -522,7 +522,7 @@ f_mk_3_crdb_comp()
 {
 
   if [ -e ${CRDB3} ]; then
-      echo $0 : File ${CRDB3} already exists. Not overwriting.
+      echo $0 : File already exists : ${CRDB3}
       return
   fi
 
@@ -720,7 +720,7 @@ f_mk_4_crdb_pdb()
 {
 
   if [ -e ${CRDB4} ]; then
-      echo $0 : File ${CRDB4} already exists. Not overwriting.
+      echo $0 : File already exists : ${CRDB4}
       return
   fi
 
@@ -921,7 +921,7 @@ EOF
 f_mk_accpwds()
 {
   if [ -e ${ACCPWDS} ]; then
-      echo $0 : File ${ACCPWDS} already exists. Not overwriting.
+      echo $0 : File already exists : ${ACCPWDS}
       return
   fi
 
@@ -964,7 +964,7 @@ chmod 600 ${ACCPWDS}
 f_mk_sec_cre()
 {
   if [ -e ${SEC_CRE} ]; then
-      echo $0 : File ${SEC_CRE} already exists. Not overwriting.
+      echo $0 : File already exists : ${SEC_CRE}
       return
   fi
 
@@ -1008,7 +1008,7 @@ EOF
 f_mk_chk_crdb1()
 {
   if [ -e ${CHK_CRDB} ]; then
-      echo $0 : File ${CHK_CRDB} already exists. Not overwriting.
+      echo $0 : File already exists : ${CHK_CRDB}
       return
   fi
 
@@ -1337,7 +1337,7 @@ EOF
 f_mk_lock_accounts()
 {
   if [ -e ${LOCK_ACC} ]; then
-      echo $0 : File ${LOCK_ACC} already exists. Not overwriting.
+      echo $0 : File already exists : ${LOCK_ACC}
       return
   fi
 
@@ -1388,7 +1388,7 @@ EOF
 
 echo . .................................. 
 echo .
-echo . $0 : Generating utilities...
+echo $0 : Generating utilities...
 echo .
 
 f_mk_sec_cre
@@ -1396,14 +1396,10 @@ f_mk_chk_crdb1
 f_mk_accpwds
 
 echo .
-echo . $0 : Utilities created.
-echo .
 
 ##################### scripts ######################
 
-echo . .................................. 
-echo .
-echo . $0 : Generating Create-scripts ...
+echo $0 : Generating Create-scripts ...
 echo .
 
 f_mk_init_ora
@@ -1414,16 +1410,16 @@ f_mk_4_crdb_pdb
 f_mk_lock_accounts
 
 echo .
-echo . $0 : Create-statements generated to files..
+echo $0 : Create-statements generated to files..
 echo .
 
 # 
 # now list and ask for confirmation
 #
 
-echo . 
-echo . List the sql files in this dir
-echo .
+# echo . 
+# echo . List the sql files in this dir
+# echo .
 
 ls -l *.sql
 
@@ -1446,7 +1442,7 @@ if [ -n "${ABC}" ]; then
 fi
 
 echo .
-echo . $0 : Continuing to create database ${ORACLE_SID} .... 
+echo $0 : Continuing to create database ${ORACLE_SID} .... 
 echo .
 
 
@@ -1457,7 +1453,7 @@ echo .
 # note: consider using $ORACLE_BASE, $ORACLE_HOME, $ORACLE_DATA, $ORACLE_FLRA
 #
 
-echo . $0 : creating directories...
+echo $0 : creating directories...
 
 OLD_UMASK=`umask`
 umask 0027
@@ -1475,7 +1471,7 @@ mkdir -p /opt/oracle/oradata/${ORACLE_SID}/controlfile
 umask ${OLD_UMASK}
 
 echo .
-echo . $0 : generating pwd file for ${ORACLE_SID}
+echo $0 : generating pwd file for ${ORACLE_SID}
 echo .
 
 # need a pwdfile, if only to be able to connect SQLDev for inspection
@@ -1542,14 +1538,15 @@ err=$?
 
 if [ ${err} -ne 0 ]; then
   echo 
-  echo . $0 ....... ERROR ........
+  echo $0 ....... ERROR ........
   echo .
-  echo . $0 : Error reported after Create Database.
-  echo . $0 : Check logfiles.
-  echo . $0 : Fix error and Clean-up files and processes, then re-try
+  echo $0 : Error reported after Create Database.
+  echo $0 : Check logfiles.
+  echo $0 : Fix error and Clean-up files and processes, then re-try
   echo .
-  echo . $0 : Exiting with error code ${err}
-  echo . $0 ......................
+  echo $0 : Exiting with error code ${err}
+  echo .
+  echo $0 ......................
   echo 
 
   exit ${err}
